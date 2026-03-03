@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "rencache.h"
 
 /* a cache over the software renderer -- all drawing operations are stored as
@@ -270,7 +272,7 @@ void rencache_end_frame(void) {
 
   /* update dirty rects */
   if (rect_count > 0) {
-    ren_update_rects(rect_buf, rect_count);
+    ren_update_rects();
   }
 
   /* free fonts */

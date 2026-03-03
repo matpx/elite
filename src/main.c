@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include <SDL2/SDL.h>
+#include <stdlib.h>
+#include "lib/RGFW/RGFW.h"
 #include "api/api.h"
 #include "renderer.h"
 
@@ -12,16 +13,29 @@
 #endif
 
 
-SDL_Window *window;
+RGFW_window *window;
 
 
 static double get_scale(void) {
-  float dpi;
-  SDL_GetDisplayDPI(0, NULL, &dpi, NULL);
-#if _WIN32
-  return dpi / 96.0;
-#else
+  RGFW_monitor *mon = RGFW_window_getMonitor(window);
+  if (mon) {
+    float sx;
+    RGFW_monitor_getScale(mon, &sx, NULL);
+    return sx;
+  }
   return 1.0;
+}
+
+
+static const char* get_platform(void) {
+#if defined(_WIN32)
+  return "Windows";
+#elif defined(__APPLE__)
+  return "Mac OS X";
+#elif defined(__linux__)
+  return "Linux";
+#else
+  return "Unknown";
 #endif
 }
 
@@ -48,44 +62,30 @@ static void init_window_icon(void) {
 #ifndef _WIN32
   #include "../icon.inl"
   (void) icon_rgba_len; /* unused */
-  SDL_Surface *surf = SDL_CreateRGBSurfaceFrom(
-    icon_rgba, 64, 64,
-    32, 64 * 4,
-    0x000000ff,
-    0x0000ff00,
-    0x00ff0000,
-    0xff000000);
-  SDL_SetWindowIcon(window, surf);
-  SDL_FreeSurface(surf);
+  RGFW_window_setIcon(window, icon_rgba, 64, 64, RGFW_formatRGBA8);
 #endif
 }
 
 
 int main(int argc, char **argv) {
-#ifdef _WIN32
-  HINSTANCE lib = LoadLibrary("user32.dll");
-  int (*SetProcessDPIAware)() = (void*) GetProcAddress(lib, "SetProcessDPIAware");
-  SetProcessDPIAware();
-#endif
+  RGFW_init();
 
-  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-  SDL_EnableScreenSaver();
-  SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-  atexit(SDL_Quit);
+  /* get screen size for initial window dimensions */
+  RGFW_monitor **monitors = RGFW_getMonitors(NULL);
+  int screen_w = 800, screen_h = 600;
+  if (monitors && monitors[0]) {
+    RGFW_monitorMode mode;
+    if (RGFW_monitor_getMode(monitors[0], &mode)) {
+      screen_w = mode.w;
+      screen_h = mode.h;
+    }
+  }
 
-#ifdef SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR /* Available since 2.0.8 */
-  SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
-#endif
-#if SDL_VERSION_ATLEAST(2, 0, 5)
-  SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
-#endif
+  window = RGFW_createWindow(
+    "", 0, 0, screen_w * 0.8, screen_h * 0.8,
+    RGFW_windowCenter | RGFW_windowAllowDND | RGFW_windowHide);
+  RGFW_window_setExitKey(window, RGFW_keyNULL);
 
-  SDL_DisplayMode dm;
-  SDL_GetCurrentDisplayMode(0, &dm);
-
-  window = SDL_CreateWindow(
-    "", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w * 0.8, dm.h * 0.8,
-    SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
   init_window_icon();
   ren_init(window);
 
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
   lua_pushstring(L, "1.11");
   lua_setglobal(L, "VERSION");
 
-  lua_pushstring(L, SDL_GetPlatform());
+  lua_pushstring(L, get_platform());
   lua_setglobal(L, "PLATFORM");
 
   lua_pushnumber(L, get_scale());
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 
 
   lua_close(L);
-  SDL_DestroyWindow(window);
+  RGFW_window_close(window);
 
   return EXIT_SUCCESS;
 }

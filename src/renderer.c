@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <math.h>
 #include "lib/stb/stb_truetype.h"
+#include "lib/RGFW/RGFW.h"
 #include "renderer.h"
 
 #define MAX_GLYPHSET 256
@@ -26,7 +28,10 @@ struct RenFont {
 };
 
 
-static SDL_Window *window;
+static RGFW_window *window;
+static RenColor *surface_pixels;
+static int surface_w, surface_h;
+static RGFW_surface *surface;
 static struct { int left, top, right, bottom; } clip;
 
 
@@ -36,6 +41,21 @@ static void* check_alloc(void *ptr) {
     exit(EXIT_FAILURE);
   }
   return ptr;
+}
+
+
+static void update_surface(void) {
+  int w, h;
+  RGFW_window_getSize(window, &w, &h);
+  if (w == surface_w && h == surface_h && surface_pixels) return;
+
+  free(surface_pixels);
+  if (surface) { RGFW_surface_free(surface); surface = NULL; }
+
+  surface_w = w;
+  surface_h = h;
+  surface_pixels = check_alloc(calloc(w * h, sizeof(RenColor)));
+  surface = RGFW_window_createSurface(window, (u8*)surface_pixels, w, h, RGFW_formatBGRA8);
 }
 
 
@@ -56,19 +76,20 @@ static const char* utf8_to_codepoint(const char *p, unsigned *dst) {
 }
 
 
-void ren_init(SDL_Window *win) {
+void ren_init(RGFW_window *win) {
   assert(win);
   window = win;
-  SDL_Surface *surf = SDL_GetWindowSurface(window);
-  ren_set_clip_rect( (RenRect) { 0, 0, surf->w, surf->h } );
+  update_surface();
+  ren_set_clip_rect( (RenRect) { 0, 0, surface_w, surface_h } );
 }
 
 
-void ren_update_rects(RenRect *rects, int count) {
-  SDL_UpdateWindowSurfaceRects(window, (SDL_Rect*) rects, count);
+void ren_update_rects(void) {
+  update_surface();
+  RGFW_window_blitSurface(window, surface);
   static bool initial_frame = true;
   if (initial_frame) {
-    SDL_ShowWindow(window);
+    RGFW_window_show(window);
     initial_frame = false;
   }
 }
@@ -83,9 +104,9 @@ void ren_set_clip_rect(RenRect rect) {
 
 
 void ren_get_size(int *x, int *y) {
-  SDL_Surface *surf = SDL_GetWindowSurface(window);
-  *x = surf->w;
-  *y = surf->h;
+  update_surface();
+  *x = surface_w;
+  *y = surface_h;
 }
 
 
@@ -285,10 +306,9 @@ void ren_draw_rect(RenRect rect, RenColor color) {
   x2 = x2 > clip.right  ? clip.right  : x2;
   y2 = y2 > clip.bottom ? clip.bottom : y2;
 
-  SDL_Surface *surf = SDL_GetWindowSurface(window);
-  RenColor *d = (RenColor*) surf->pixels;
-  d += x1 + y1 * surf->w;
-  int dr = surf->w - (x2 - x1);
+  RenColor *d = surface_pixels;
+  d += x1 + y1 * surface_w;
+  int dr = surface_w - (x2 - x1);
 
   if (color.a == 0xff) {
     rect_draw_loop(color);
@@ -313,13 +333,12 @@ void ren_draw_image(RenImage *image, RenRect *sub, int x, int y, RenColor color)
   }
 
   /* draw */
-  SDL_Surface *surf = SDL_GetWindowSurface(window);
   RenColor *s = image->pixels;
-  RenColor *d = (RenColor*) surf->pixels;
+  RenColor *d = surface_pixels;
   s += sub->x + sub->y * image->width;
-  d += x + y * surf->w;
+  d += x + y * surface_w;
   int sr = image->width - sub->width;
-  int dr = surf->w - sub->width;
+  int dr = surface_w - sub->width;
 
   for (int j = 0; j < sub->height; j++) {
     for (int i = 0; i < sub->width; i++) {

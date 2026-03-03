@@ -1,127 +1,254 @@
-#include <SDL2/SDL.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <errno.h>
+#include <string.h>
+#include <time.h>
 #include <sys/stat.h>
+#include "../lib/RGFW/RGFW.h"
+#include "../lib/libtinyfiledialogs/tinyfiledialogs.h"
 #include "api.h"
-#include "rencache.h"
+#include "../rencache.h"
 #ifdef _WIN32
   #include <windows.h>
 #endif
 
-extern SDL_Window *window;
+extern RGFW_window *window;
 
 
 static const char* button_name(int button) {
   switch (button) {
-    case 1  : return "left";
-    case 2  : return "middle";
-    case 3  : return "right";
-    default : return "?";
+    case RGFW_mouseLeft   : return "left";
+    case RGFW_mouseMiddle : return "middle";
+    case RGFW_mouseRight  : return "right";
+    default               : return "?";
   }
 }
 
 
-static char* key_name(char *dst, int sym) {
-  strcpy(dst, SDL_GetKeyName(sym));
-  char *p = dst;
-  while (*p) {
-    *p = tolower(*p);
-    p++;
+static char* key_name(char *dst, RGFW_key key) {
+  switch (key) {
+    case RGFW_escape:       strcpy(dst, "escape"); break;
+    case RGFW_return:       strcpy(dst, "return"); break;
+    case RGFW_tab:          strcpy(dst, "tab"); break;
+    case RGFW_backSpace:    strcpy(dst, "backspace"); break;
+    case RGFW_delete:       strcpy(dst, "delete"); break;
+    case RGFW_space:        strcpy(dst, "space"); break;
+    case RGFW_F1:           strcpy(dst, "f1"); break;
+    case RGFW_F2:           strcpy(dst, "f2"); break;
+    case RGFW_F3:           strcpy(dst, "f3"); break;
+    case RGFW_F4:           strcpy(dst, "f4"); break;
+    case RGFW_F5:           strcpy(dst, "f5"); break;
+    case RGFW_F6:           strcpy(dst, "f6"); break;
+    case RGFW_F7:           strcpy(dst, "f7"); break;
+    case RGFW_F8:           strcpy(dst, "f8"); break;
+    case RGFW_F9:           strcpy(dst, "f9"); break;
+    case RGFW_F10:          strcpy(dst, "f10"); break;
+    case RGFW_F11:          strcpy(dst, "f11"); break;
+    case RGFW_F12:          strcpy(dst, "f12"); break;
+    case RGFW_capsLock:     strcpy(dst, "capslock"); break;
+    case RGFW_shiftL:       strcpy(dst, "left shift"); break;
+    case RGFW_shiftR:       strcpy(dst, "right shift"); break;
+    case RGFW_controlL:     strcpy(dst, "left ctrl"); break;
+    case RGFW_controlR:     strcpy(dst, "right ctrl"); break;
+    case RGFW_altL:         strcpy(dst, "left alt"); break;
+    case RGFW_altR:         strcpy(dst, "right alt"); break;
+    case RGFW_superL:       strcpy(dst, "left gui"); break;
+    case RGFW_superR:       strcpy(dst, "right gui"); break;
+    case RGFW_up:           strcpy(dst, "up"); break;
+    case RGFW_down:         strcpy(dst, "down"); break;
+    case RGFW_left:         strcpy(dst, "left"); break;
+    case RGFW_right:        strcpy(dst, "right"); break;
+    case RGFW_insert:       strcpy(dst, "insert"); break;
+    case RGFW_home:         strcpy(dst, "home"); break;
+    case RGFW_end:          strcpy(dst, "end"); break;
+    case RGFW_pageUp:       strcpy(dst, "pageup"); break;
+    case RGFW_pageDown:     strcpy(dst, "pagedown"); break;
+    case RGFW_numLock:      strcpy(dst, "numlock"); break;
+    case RGFW_scrollLock:   strcpy(dst, "scrolllock"); break;
+    case RGFW_printScreen:  strcpy(dst, "printscreen"); break;
+    case RGFW_pause:        strcpy(dst, "pause"); break;
+    case RGFW_menu:         strcpy(dst, "menu"); break;
+    case RGFW_kpSlash:      strcpy(dst, "keypad /"); break;
+    case RGFW_kpMultiply:   strcpy(dst, "keypad *"); break;
+    case RGFW_kpPlus:       strcpy(dst, "keypad +"); break;
+    case RGFW_kpMinus:      strcpy(dst, "keypad -"); break;
+    case RGFW_kpPeriod:     strcpy(dst, "keypad ."); break;
+    case RGFW_kpReturn:     strcpy(dst, "keypad enter"); break;
+    case RGFW_kp0:          strcpy(dst, "keypad 0"); break;
+    case RGFW_kp1:          strcpy(dst, "keypad 1"); break;
+    case RGFW_kp2:          strcpy(dst, "keypad 2"); break;
+    case RGFW_kp3:          strcpy(dst, "keypad 3"); break;
+    case RGFW_kp4:          strcpy(dst, "keypad 4"); break;
+    case RGFW_kp5:          strcpy(dst, "keypad 5"); break;
+    case RGFW_kp6:          strcpy(dst, "keypad 6"); break;
+    case RGFW_kp7:          strcpy(dst, "keypad 7"); break;
+    case RGFW_kp8:          strcpy(dst, "keypad 8"); break;
+    case RGFW_kp9:          strcpy(dst, "keypad 9"); break;
+    default:
+      /* printable ASCII keys */
+      if (key >= 32 && key < 127) {
+        dst[0] = tolower(key);
+        dst[1] = '\0';
+      } else {
+        dst[0] = '?';
+        dst[1] = '\0';
+      }
+      break;
   }
   return dst;
 }
 
 
+/* convert a Unicode codepoint to a UTF-8 string, return length */
+static int codepoint_to_utf8(unsigned int cp, char *buf) {
+  if (cp < 0x80) {
+    buf[0] = cp;
+    buf[1] = '\0';
+    return 1;
+  } else if (cp < 0x800) {
+    buf[0] = 0xC0 | (cp >> 6);
+    buf[1] = 0x80 | (cp & 0x3F);
+    buf[2] = '\0';
+    return 2;
+  } else if (cp < 0x10000) {
+    buf[0] = 0xE0 | (cp >> 12);
+    buf[1] = 0x80 | ((cp >> 6) & 0x3F);
+    buf[2] = 0x80 | (cp & 0x3F);
+    buf[3] = '\0';
+    return 3;
+  } else if (cp < 0x110000) {
+    buf[0] = 0xF0 | (cp >> 18);
+    buf[1] = 0x80 | ((cp >> 12) & 0x3F);
+    buf[2] = 0x80 | ((cp >> 6) & 0x3F);
+    buf[3] = 0x80 | (cp & 0x3F);
+    buf[4] = '\0';
+    return 4;
+  }
+  buf[0] = '\0';
+  return 0;
+}
+
+
+/* state for multi-file drops */
+static char **pending_drop_files;
+static size_t pending_drop_count;
+static size_t pending_drop_idx;
+
+/* last known mouse position (for file drop coordinates) */
+static int last_mouse_x, last_mouse_y;
+
+
 static int f_poll_event(lua_State *L) {
-  char buf[16];
-  int mx, my, wx, wy;
-  SDL_Event e;
+  char buf[64];
+  RGFW_event e;
+
+  /* emit pending file drops one at a time */
+  if (pending_drop_files && pending_drop_idx < pending_drop_count) {
+    lua_pushstring(L, "filedropped");
+    lua_pushstring(L, pending_drop_files[pending_drop_idx++]);
+    lua_pushnumber(L, last_mouse_x);
+    lua_pushnumber(L, last_mouse_y);
+    if (pending_drop_idx >= pending_drop_count) {
+      pending_drop_files = NULL;
+      pending_drop_count = 0;
+      pending_drop_idx = 0;
+    }
+    return 4;
+  }
 
 top:
-  if ( !SDL_PollEvent(&e) ) {
+  if (!RGFW_window_checkEvent(window, &e)) {
     return 0;
   }
 
   switch (e.type) {
-    case SDL_QUIT:
+    case RGFW_quit:
       lua_pushstring(L, "quit");
       return 1;
 
-    case SDL_WINDOWEVENT:
-      if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
-        lua_pushstring(L, "resized");
-        lua_pushnumber(L, e.window.data1);
-        lua_pushnumber(L, e.window.data2);
-        return 3;
-      } else if (e.window.event == SDL_WINDOWEVENT_EXPOSED) {
-        rencache_invalidate();
-        lua_pushstring(L, "exposed");
-        return 1;
-      }
-      /* on some systems, when alt-tabbing to the window SDL will queue up
-      ** several KEYDOWN events for the `tab` key; we flush all keydown
-      ** events on focus so these are discarded */
-      if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-        SDL_FlushEvent(SDL_KEYDOWN);
-      }
+    case RGFW_windowResized: {
+      int ww, wh;
+      RGFW_window_getSize(window, &ww, &wh);
+      lua_pushstring(L, "resized");
+      lua_pushnumber(L, ww);
+      lua_pushnumber(L, wh);
+      return 3;
+    }
+
+    case RGFW_windowRefresh:
+      rencache_invalidate();
+      lua_pushstring(L, "exposed");
+      return 1;
+
+    case RGFW_focusIn:
       goto top;
 
-    case SDL_DROPFILE:
-      SDL_GetGlobalMouseState(&mx, &my);
-      SDL_GetWindowPosition(window, &wx, &wy);
-      lua_pushstring(L, "filedropped");
-      lua_pushstring(L, e.drop.file);
-      lua_pushnumber(L, mx - wx);
-      lua_pushnumber(L, my - wy);
-      SDL_free(e.drop.file);
-      return 4;
+    case RGFW_focusOut:
+      goto top;
 
-    case SDL_KEYDOWN:
+    case RGFW_dataDrop:
+      pending_drop_files = e.drop.files;
+      pending_drop_count = e.drop.count;
+      pending_drop_idx = 0;
+      goto top;
+
+    case RGFW_keyPressed:
       lua_pushstring(L, "keypressed");
-      lua_pushstring(L, key_name(buf, e.key.keysym.sym));
+      lua_pushstring(L, key_name(buf, e.key.value));
       return 2;
 
-    case SDL_KEYUP:
+    case RGFW_keyReleased:
       lua_pushstring(L, "keyreleased");
-      lua_pushstring(L, key_name(buf, e.key.keysym.sym));
+      lua_pushstring(L, key_name(buf, e.key.value));
       return 2;
 
-    case SDL_TEXTINPUT:
-      lua_pushstring(L, "textinput");
-      lua_pushstring(L, e.text.text);
-      return 2;
+    case RGFW_keyChar: {
+      char utf8[8];
+      int len = codepoint_to_utf8(e.keyChar.value, utf8);
+      if (len > 0 && e.keyChar.value >= 32) {
+        lua_pushstring(L, "textinput");
+        lua_pushstring(L, utf8);
+        return 2;
+      }
+      goto top;
+    }
 
-    case SDL_MOUSEBUTTONDOWN:
-      if (e.button.button == 1) { SDL_CaptureMouse(1); }
+    case RGFW_mouseButtonPressed:
+      if (e.button.value == RGFW_mouseLeft) {
+        RGFW_window_captureMouse(window, RGFW_TRUE);
+      }
       lua_pushstring(L, "mousepressed");
-      lua_pushstring(L, button_name(e.button.button));
-      lua_pushnumber(L, e.button.x);
-      lua_pushnumber(L, e.button.y);
-      lua_pushnumber(L, e.button.clicks);
+      lua_pushstring(L, button_name(e.button.value));
+      lua_pushnumber(L, last_mouse_x);
+      lua_pushnumber(L, last_mouse_y);
+      lua_pushnumber(L, 1); /* RGFW doesn't track click count */
       return 5;
 
-    case SDL_MOUSEBUTTONUP:
-      if (e.button.button == 1) { SDL_CaptureMouse(0); }
+    case RGFW_mouseButtonReleased:
+      if (e.button.value == RGFW_mouseLeft) {
+        RGFW_window_captureMouse(window, RGFW_FALSE);
+      }
       lua_pushstring(L, "mousereleased");
-      lua_pushstring(L, button_name(e.button.button));
-      lua_pushnumber(L, e.button.x);
-      lua_pushnumber(L, e.button.y);
+      lua_pushstring(L, button_name(e.button.value));
+      lua_pushnumber(L, last_mouse_x);
+      lua_pushnumber(L, last_mouse_y);
       return 4;
 
-    case SDL_MOUSEMOTION:
+    case RGFW_mousePosChanged:
+      last_mouse_x = e.mouse.x;
+      last_mouse_y = e.mouse.y;
       lua_pushstring(L, "mousemoved");
-      lua_pushnumber(L, e.motion.x);
-      lua_pushnumber(L, e.motion.y);
-      lua_pushnumber(L, e.motion.xrel);
-      lua_pushnumber(L, e.motion.yrel);
+      lua_pushnumber(L, e.mouse.x);
+      lua_pushnumber(L, e.mouse.y);
+      lua_pushnumber(L, e.mouse.vecX);
+      lua_pushnumber(L, e.mouse.vecY);
       return 5;
 
-    case SDL_MOUSEWHEEL:
+    case RGFW_mouseScroll:
       lua_pushstring(L, "mousewheel");
-      lua_pushnumber(L, e.wheel.y);
+      lua_pushnumber(L, e.scroll.y);
       return 2;
 
     default:
@@ -134,12 +261,11 @@ top:
 
 static int f_wait_event(lua_State *L) {
   double n = luaL_checknumber(L, 1);
-  lua_pushboolean(L, SDL_WaitEventTimeout(NULL, n * 1000));
+  RGFW_waitForEvent((int)(n * 1000));
+  lua_pushboolean(L, 1);
   return 1;
 }
 
-
-static SDL_Cursor* cursor_cache[SDL_SYSTEM_CURSOR_HAND + 1];
 
 static const char *cursor_opts[] = {
   "arrow",
@@ -150,30 +276,24 @@ static const char *cursor_opts[] = {
   NULL
 };
 
-static const int cursor_enums[] = {
-  SDL_SYSTEM_CURSOR_ARROW,
-  SDL_SYSTEM_CURSOR_IBEAM,
-  SDL_SYSTEM_CURSOR_SIZEWE,
-  SDL_SYSTEM_CURSOR_SIZENS,
-  SDL_SYSTEM_CURSOR_HAND
+static const RGFW_mouseIcons cursor_enums[] = {
+  RGFW_mouseArrow,
+  RGFW_mouseIbeam,
+  RGFW_mouseResizeEW,
+  RGFW_mouseResizeNS,
+  RGFW_mousePointingHand
 };
 
 static int f_set_cursor(lua_State *L) {
   int opt = luaL_checkoption(L, 1, "arrow", cursor_opts);
-  int n = cursor_enums[opt];
-  SDL_Cursor *cursor = cursor_cache[n];
-  if (!cursor) {
-    cursor = SDL_CreateSystemCursor(n);
-    cursor_cache[n] = cursor;
-  }
-  SDL_SetCursor(cursor);
+  RGFW_window_setMouseStandard(window, cursor_enums[opt]);
   return 0;
 }
 
 
 static int f_set_window_title(lua_State *L) {
   const char *title = luaL_checkstring(L, 1);
-  SDL_SetWindowTitle(window, title);
+  RGFW_window_setName(window, title);
   return 0;
 }
 
@@ -183,17 +303,19 @@ enum { WIN_NORMAL, WIN_MAXIMIZED, WIN_FULLSCREEN };
 
 static int f_set_window_mode(lua_State *L) {
   int n = luaL_checkoption(L, 1, "normal", window_opts);
-  SDL_SetWindowFullscreen(window,
-    n == WIN_FULLSCREEN ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-  if (n == WIN_NORMAL) { SDL_RestoreWindow(window); }
-  if (n == WIN_MAXIMIZED) { SDL_MaximizeWindow(window); }
+  if (n == WIN_FULLSCREEN) {
+    RGFW_window_setFullscreen(window, RGFW_TRUE);
+  } else {
+    RGFW_window_setFullscreen(window, RGFW_FALSE);
+    if (n == WIN_NORMAL)    { RGFW_window_restore(window); }
+    if (n == WIN_MAXIMIZED) { RGFW_window_maximize(window); }
+  }
   return 0;
 }
 
 
 static int f_window_has_focus(lua_State *L) {
-  unsigned flags = SDL_GetWindowFlags(window);
-  lua_pushboolean(L, flags & SDL_WINDOW_INPUT_FOCUS);
+  lua_pushboolean(L, RGFW_window_isInFocus(window));
   return 1;
 }
 
@@ -201,26 +323,8 @@ static int f_window_has_focus(lua_State *L) {
 static int f_show_confirm_dialog(lua_State *L) {
   const char *title = luaL_checkstring(L, 1);
   const char *msg = luaL_checkstring(L, 2);
-
-#if _WIN32
-  int id = MessageBox(0, msg, title, MB_YESNO | MB_ICONWARNING);
-  lua_pushboolean(L, id == IDYES);
-
-#else
-  SDL_MessageBoxButtonData buttons[] = {
-    { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes" },
-    { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "No" },
-  };
-  SDL_MessageBoxData data = {
-    .title = title,
-    .message = msg,
-    .numbuttons = 2,
-    .buttons = buttons,
-  };
-  int buttonid;
-  SDL_ShowMessageBox(&data, &buttonid);
-  lua_pushboolean(L, buttonid == 1);
-#endif
+  int result = tinyfd_messageBox(title, msg, "yesno", "warning", 0);
+  lua_pushboolean(L, result);
   return 1;
 }
 
@@ -306,23 +410,26 @@ static int f_get_file_info(lua_State *L) {
 
 
 static int f_get_clipboard(lua_State *L) {
-  char *text = SDL_GetClipboardText();
-  if (!text) { return 0; }
+  size_t len;
+  const char *text = RGFW_readClipboard(&len);
+  if (!text || len == 0) { return 0; }
   lua_pushstring(L, text);
-  SDL_free(text);
   return 1;
 }
 
 
 static int f_set_clipboard(lua_State *L) {
-  const char *text = luaL_checkstring(L, 1);
-  SDL_SetClipboardText(text);
+  size_t len;
+  const char *text = luaL_checklstring(L, 1, &len);
+  RGFW_writeClipboard(text, len);
   return 0;
 }
 
 
 static int f_get_time(lua_State *L) {
-  double n = SDL_GetPerformanceCounter() / (double) SDL_GetPerformanceFrequency();
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  double n = ts.tv_sec + ts.tv_nsec / 1e9;
   lua_pushnumber(L, n);
   return 1;
 }
@@ -330,7 +437,10 @@ static int f_get_time(lua_State *L) {
 
 static int f_sleep(lua_State *L) {
   double n = luaL_checknumber(L, 1);
-  SDL_Delay(n * 1000);
+  struct timespec ts;
+  ts.tv_sec = (time_t) n;
+  ts.tv_nsec = (long)((n - ts.tv_sec) * 1e9);
+  nanosleep(&ts, NULL);
   return 0;
 }
 

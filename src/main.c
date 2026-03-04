@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
   init_window_icon();
   ren_init(window);
 
+  SDL_StartTextInput(window);
 
   lua_State *L = luaL_newstate();
   luaL_openlibs(L);

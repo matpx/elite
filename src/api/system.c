@@ -231,7 +231,7 @@ static int f_list_dir(lua_State *L) {
   const char *path = luaL_checkstring(L, 1);
 
   int count;
-  char **entries = SDL_GlobDirectory(path, NULL, 0, &count);
+  char **entries = SDL_GlobDirectory(path, "*", 0, &count);
   if (!entries) {
     lua_pushnil(L);
     lua_pushstring(L, SDL_GetError());

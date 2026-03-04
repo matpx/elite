@@ -1,4 +1,9 @@
+/*.o
+/res.res
+
 /lite
 /lite.exe
 /lite.zip
 /SDL3.dll
+
+/error.txt

@@ -1,6 +1,7 @@
 $compiler = if ($env:CC) { $env:CC } else { ".\winlib\tcc\tcc.exe" }
 
 Write-Host "compiling (windows) with $compiler..."
+
 $srcs = (Get-ChildItem -Recurse src -Filter *.c).FullName | Resolve-Path -Relative
 & $compiler -Bwinlib\tcc $srcs `
     -O3 -s -std=c11 -fno-strict-aliasing -Isrc -DLUA_USE_POPEN `

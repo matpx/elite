@@ -1,6 +1,8 @@
 #!/bin/bash
 
-cflags="-Wall -O3 -g -std=gnu11 -fno-strict-aliasing -Isrc"
+set -e
+
+cflags="-Wall -O3 -g -std=c11 -fno-strict-aliasing -Isrc -D_XOPEN_SOURCE=500"
 lflags="-lSDL3 -lm"
 
 if [[ $* == *windows* ]]; then
@@ -23,7 +25,6 @@ if command -v ccache >/dev/null; then
   compiler="ccache $compiler"
 fi
 
-
 echo "compiling ($platform)..."
 for f in `find src -name "*.c"`; do
   $compiler -c $cflags $f -o "${f//\//_}.o"
@@ -38,6 +39,6 @@ if [[ ! $got_error ]]; then
 fi
 
 echo "cleaning up..."
-rm *.o
-rm res.res 2>/dev/null
+rm -f *.o
+rm -f res.res
 echo "done"

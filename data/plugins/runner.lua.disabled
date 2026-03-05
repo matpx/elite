@@ -1,0 +1,86 @@
+-- Define a "runner" global in .lite_project.lua to enable build tasks:
+--
+--   global { runner = {
+--     build = function()
+--       local out, code = system.exec("make")
+--       if code == 0 then core.log("OK") return true
+--       else core.error("Failed\n%s", out) return false end
+--     end,
+--     run   = function() system.exec("./myapp") end,
+--     clean = function() os.remove("myapp") end,
+--     test  = function() system.exec("make test") end,
+--   } }
+--
+-- Keys: F5 = build + run, F7 = build only
+
+local core = require "core"
+local command = require "core.command"
+local keymap = require "core.keymap"
+local style = require "core.style"
+local StatusView = require "core.statusview"
+
+local last_status = nil -- nil = no build yet, true = success, false = failure
+
+
+local function run_task(name)
+  if type(rawget(_G, "runner")) ~= "table" or not runner[name] then
+    core.error("runner: no '%s' function defined", name)
+    return
+  end
+  local ok, result = pcall(runner[name])
+  if not ok then
+    last_status = false
+    core.error("'%s' error: %s", name, result)
+  else
+    last_status = result ~= false
+  end
+end
+
+
+local get_items = StatusView.get_items
+
+function StatusView:get_items()
+  if type(rawget(_G, "runner")) ~= "table" then
+    return get_items(self)
+  end
+  local left, right = get_items(self)
+
+  local label, color
+  if last_status == nil then
+    label = "ready"
+    color = style.dim
+  elseif last_status then
+    label = "success"
+    color = style.good or style.accent
+  else
+    label = "failed"
+    color = style.accent
+  end
+
+  local t = {
+    style.dim, self.separator,
+    color, "runner: " .. label,
+  }
+  for _, item in ipairs(t) do
+    table.insert(right, item)
+  end
+
+  return left, right
+end
+
+
+command.add(nil, {
+  ["runner:build"]       = function() run_task("build") end,
+  ["runner:build-and-run"] = function() run_task("build") if last_status then run_task("run") end end,
+  ["runner:run"]         = function() run_task("run") end,
+  ["runner:clean"]       = function() run_task("clean") end,
+  ["runner:test"]        = function() run_task("test") end,
+})
+
+
+keymap.add {
+  ["f5"]        = "runner:build-and-run",
+  ["f7"]        = "runner:build",
+}
+
+

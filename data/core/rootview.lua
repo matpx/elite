@@ -5,6 +5,7 @@ local keymap = require "core.keymap"
 local Object = require "core.object"
 local View = require "core.view"
 local DocView = require "core.docview"
+local ImageView = require "core.imageview"
 
 
 local EmptyView = View:extend()
@@ -415,6 +416,25 @@ function RootView:open_doc(doc)
   self.root_node:update_layout()
   view:scroll_to_line(view.doc:get_selection(), true, true)
   return view
+end
+
+
+function RootView:open_image(image_view)
+  local node = self:get_active_node()
+  if node.locked and core.last_active_view then
+    core.set_active_view(core.last_active_view)
+    node = self:get_active_node()
+  end
+  assert(not node.locked, "Cannot open image on locked node")
+  for _, view in ipairs(node.views) do
+    if view:is(ImageView) and view.filename == image_view.filename then
+      node:set_active_view(view)
+      return view
+    end
+  end
+  node:add_view(image_view)
+  self.root_node:update_layout()
+  return image_view
 end
 
 

@@ -271,20 +271,7 @@ end
 
 
 function core.open_image(filename)
-  local node = core.root_view:get_active_node()
-  if node.locked and core.last_active_view then
-    core.set_active_view(core.last_active_view)
-    node = core.root_view:get_active_node()
-  end
-  for _, view in ipairs(node.views) do
-    if view:is(ImageView) and view.filename == filename then
-      node:set_active_view(view)
-      return view
-    end
-  end
   local view = ImageView(filename)
-  node:add_view(view)
-  core.root_view.root_node:update_layout()
   core.log_quiet("Opened image \"%s\"", filename)
   return view
 end
@@ -292,7 +279,7 @@ end
 
 function core.open_file(filename)
   if filename and ImageView.is_image(filename) then
-    return core.open_image(filename)
+    return core.root_view:open_image(core.open_image(filename))
   end
   return core.root_view:open_doc(core.open_doc(filename))
 end

@@ -21,7 +21,7 @@ else
 fi
 
 if echo "$*" | grep -q "debug"; then
-  cflags="$cflags -g"
+  cflags="$cflags -g -DLUA_USE_APICHECK"
   # cflags="$cflags -b"
   # lflags="$lflags -b"
 else

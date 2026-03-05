@@ -4,7 +4,7 @@ set -e
 
 if echo "$*" | grep -q "windows"; then
   compiler="${CC:-winlib/tcc/tcc.exe}"
-  cflags="-Wall -O3 -std=c11 -fno-strict-aliasing -Isrc -DLUA_USE_POPEN"
+  cflags="-Wall -O3 -std=c11 -fno-strict-aliasing -Isrc"
   cflags="$cflags -I./winlib/SDL3-3.4.2/x86_64-w64-mingw32/include"
 
   if echo "$compiler" | grep -q "tcc"; then

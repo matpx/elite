@@ -2,13 +2,13 @@
 --
 --   global { runner = {
 --     build = function()
---       local out, code = system.exec("make")
+--       local out, code = system.exec("make", true)
 --       if code == 0 then core.log("OK") return true
 --       else core.error("Failed\n%s", out) return false end
 --     end,
 --     run   = function() system.exec("./myapp") end,
 --     clean = function() os.remove("myapp") end,
---     test  = function() system.exec("make test") end,
+--     test  = function() system.exec("make test", true) end,
 --   } }
 --
 -- Keys: F5 = build + run, F7 = build only

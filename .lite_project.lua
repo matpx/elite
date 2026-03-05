@@ -5,7 +5,7 @@ local core = require "core"
 
 global { runner = {
   build = function()
-    local out, code = system.exec(windows and "build.bat" or "./build.sh")
+    local out, code = system.exec(windows and "build.bat" or "./build.sh", true)
     if code == 0 then
       core.log("Build succeeded\n%s", out or "")
       return true

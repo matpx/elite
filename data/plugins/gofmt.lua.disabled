@@ -3,10 +3,8 @@ local command = require "core.command"
 local keymap = require "core.keymap"
 
 local function exec(cmd)
-  local fp = io.popen(cmd, "r")
-  local res = fp:read("*a")
-  local success = fp:close()
-  return res:gsub("%\n$", ""), success
+  local res, code = system.exec(cmd, true)
+  return (res or ""):gsub("%\n$", ""), code == 0
 end
 
 local function get_cmd_text(cmd, doc)

@@ -326,6 +326,7 @@ static int f_sleep(lua_State *L) {
 
 static int f_exec(lua_State *L) {
   const char *cmd = luaL_checkstring(L, 1);
+  int blocking = lua_toboolean(L, 2);
 #ifdef _WIN32
   const char *args[] = { "cmd.exe", "/c", cmd, NULL };
 #else
@@ -333,13 +334,21 @@ static int f_exec(lua_State *L) {
 #endif
   SDL_PropertiesID props = SDL_CreateProperties();
   SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, (void *)args);
-  SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
-  SDL_SetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_TO_STDOUT_BOOLEAN, true);
+  if (blocking) {
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
+    SDL_SetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_TO_STDOUT_BOOLEAN, true);
+  }
   SDL_Process *proc = SDL_CreateProcessWithProperties(props);
   SDL_DestroyProperties(props);
   if (!proc) {
     lua_pushnil(L);
     lua_pushinteger(L, -1);
+    return 2;
+  }
+  if (!blocking) {
+    SDL_DestroyProcess(proc);
+    lua_pushboolean(L, 1);
+    lua_pushinteger(L, 0);
     return 2;
   }
   size_t len = 0;

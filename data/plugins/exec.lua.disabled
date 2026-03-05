@@ -3,9 +3,7 @@ local command = require "core.command"
 
 
 local function exec(cmd, keep_newline)
-  local fp = io.popen(cmd, "r")
-  local res = fp:read("*a")
-  fp:close()
+  local res = system.exec(cmd, true) or ""
   return keep_newline and res or res:gsub("%\n$", "")
 end
 

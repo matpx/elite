@@ -13,7 +13,7 @@ set srcs=
 for /r src %%f in (*.c) do set srcs=!srcs! %%f
 
 %compiler% -Bwinlib\tcc %srcs% ^
-    -Wall -O3 -s -std=c11 -fno-strict-aliasing -Isrc -DLUA_USE_POPEN ^
+    -Wall -O3 -s -std=c11 -fno-strict-aliasing -Isrc ^
     -I.\winlib\SDL3-3.4.2\x86_64-w64-mingw32\include ^
     -Iwinlib\tcc\include\ -I.\winlib\tcc\include\sys ^
     -Iwinlib\tcc\include\winapi -Wl,-subsystem=windows -luser32 ^

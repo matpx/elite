@@ -6,7 +6,8 @@ local keymap = require "core.keymap"
 local style = require "core.style"
 local View = require "core.view"
 
-config.treeview_size = 200 * SCALE
+config.treeview_min_size = 200 * SCALE
+config.treeview_max_size = 400 * SCALE
 
 local function get_depth(filename)
   local n = 0
@@ -124,8 +125,8 @@ end
 
 
 function TreeView:update()
-  -- update width
-  local dest = self.visible and config.treeview_size or 0
+  -- update width based on content (computed in draw)
+  local dest = self.visible and (self.target_width or config.treeview_min_size) or 0
   if self.init_size then
     self.size.x = dest
     self.init_size = false
@@ -142,6 +143,7 @@ function TreeView:draw()
 
   local icon_width = style.icon_font:get_width("D")
   local spacing = style.font:get_width(" ") * 2
+  local max_x = 0
 
   local doc = core.active_view.doc
   local active_filename = doc and system.absolute_path(doc.filename or "")
@@ -178,7 +180,10 @@ function TreeView:draw()
     -- text
     x = x + spacing
     x = common.draw_text(style.font, color, item.name, nil, x, y, 0, h)
+    max_x = math.max(max_x, x)
   end
+
+  self.target_width = common.clamp(max_x + style.padding.x, config.treeview_min_size, config.treeview_max_size)
 end
 
 

@@ -3,8 +3,7 @@
 --   global { runner = {
 --     build = function()
 --       local out, code = system.exec("make", true)
---       if code == 0 then core.log("OK") return true
---       else core.error("Failed\n%s", out) return false end
+--       return code == 0, out
 --     end,
 --     run   = function() system.exec("./myapp") end,
 --     clean = function() os.remove("myapp") end,
@@ -27,12 +26,16 @@ local function run_task(name)
     core.error("runner: no '%s' function defined", name)
     return
   end
-  local ok, result = pcall(runner[name])
+  local ok, success, output = pcall(runner[name])
   if not ok then
     last_status = false
-    core.error("'%s' error: %s", name, result)
+    core.error("runner %s error: %s", name, success)
+  elseif success then
+    last_status = true
+    core.log("runner %s succeeded\n%s", name, output or "")
   else
-    last_status = result ~= false
+    last_status = false
+    core.error("runner %s failed\n%s", name, output or "")
   end
 end
 

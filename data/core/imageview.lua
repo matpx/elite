@@ -8,7 +8,7 @@ local ImageView = View:extend()
 local image_extensions = {
   [".png"] = true, [".jpg"] = true, [".jpeg"] = true,
   [".bmp"] = true, [".gif"] = true, [".tga"] = true,
-  [".psd"] = true, [".hdr"] = true,
+  [".psd"] = true, [".hdr"] = true, [".qoi"] = true,
 }
 
 

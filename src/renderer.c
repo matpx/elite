@@ -5,6 +5,7 @@
 #include <math.h>
 #include "lib/stb/stb_truetype.h"
 #include "lib/stb/stb_image.h"
+#include "lib/qoi/qoi.h"
 #include "lib/stb/stb_image_resize2.h"
 #include "renderer.h"
 
@@ -105,17 +106,44 @@ RenImage* ren_new_image(int width, int height) {
 
 RenImage* ren_load_image(const char *filename) {
   int w, h, n;
-  unsigned char *data = stbi_load(filename, &w, &h, &n, 4);
-  if (!data) { return NULL; }
+  unsigned char *data = NULL;
+
+  const char *ext = strrchr(filename, '.');
+  const bool is_qoi = ext && strcmp(ext, ".qoi") == 0;
+
+  if (is_qoi) {
+    /* QOI */
+    qoi_desc desc;
+    data = qoi_read(filename, &desc, 4);
+    if (!data) { return NULL; }
+
+    w = desc.width;
+    h = desc.height;
+
+  } else {
+    /* stb_image */
+    data = stbi_load(filename, &w, &h, &n, 4);
+    if (!data) { return NULL; }
+  }
+
   RenImage *image = ren_new_image(w, h);
-  /* convert RGBA to BGRA */
+
+  /* convert RGBA -> BGRA */
   RenColor *dst = image->pixels;
   unsigned char *src = data;
+
   for (int i = 0; i < w * h; i++) {
-    dst[i] = (RenColor) { .r = src[0], .g = src[1], .b = src[2], .a = src[3] };
+    dst[i] = (RenColor){ .r = src[0], .g = src[1], .b = src[2], .a = src[3] };
     src += 4;
   }
-  stbi_image_free(data);
+
+  if (is_qoi) {
+    free(data);
+  }
+  else {
+    stbi_image_free(data);
+  }
+
   return image;
 }
 

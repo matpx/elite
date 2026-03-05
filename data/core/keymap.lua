@@ -117,6 +117,7 @@ keymap.add {
   ["ctrl+f"] = "find-replace:find",
   ["ctrl+r"] = "find-replace:replace",
   ["f3"] = "find-replace:repeat-find",
+  ["f2"] = "doc:rename",
   ["shift+f3"] = "find-replace:previous-find",
   ["ctrl+g"] = "doc:go-to-line",
   ["ctrl+s"] = "doc:save",

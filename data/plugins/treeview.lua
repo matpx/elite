@@ -7,7 +7,6 @@ local style = require "core.style"
 local View = require "core.view"
 
 config.treeview_min_size = 200 * SCALE
-config.treeview_max_size = 400 * SCALE
 
 local function get_depth(filename)
   local n = 0
@@ -183,7 +182,7 @@ function TreeView:draw()
     max_x = math.max(max_x, x)
   end
 
-  self.target_width = common.clamp(max_x + style.padding.x, config.treeview_min_size, config.treeview_max_size)
+  self.target_width = math.max(max_x + style.padding.x, config.treeview_min_size)
 end
 
 

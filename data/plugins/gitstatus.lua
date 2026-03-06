@@ -25,17 +25,19 @@ end
 
 core.add_thread(function()
   while true do
-    if system.get_file_info(".git") then
-      -- get branch name
-      git.branch = exec("git rev-parse --abbrev-ref HEAD", 1):match("[^\n]*")
+    if system.window_has_focus() then
+      if system.get_file_info(".git") then
+        -- get branch name
+        git.branch = exec("git rev-parse --abbrev-ref HEAD", 1):match("[^\n]*")
 
-      -- get diff
-      local line = exec("git diff --stat", 1):match("[^\n]*%s*$")
-      git.inserts = tonumber(line:match("(%d+) ins")) or 0
-      git.deletes = tonumber(line:match("(%d+) del")) or 0
+        -- get diff
+        local line = exec("git diff --stat", 1):match("[^\n]*%s*$")
+        git.inserts = tonumber(line:match("(%d+) ins")) or 0
+        git.deletes = tonumber(line:match("(%d+) del")) or 0
 
-    else
-      git.branch = nil
+      else
+        git.branch = nil
+      end
     end
 
     coroutine.yield(config.project_scan_rate)

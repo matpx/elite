@@ -44,15 +44,21 @@ static void* check_alloc(void *ptr) {
 
 
 static const char* utf8_to_codepoint(const char *p, unsigned *dst) {
+  unsigned char c = *p;
   unsigned res, n;
-  switch (*p & 0xf0) {
-    case 0xf0 :  res = *p & 0x07;  n = 3;  break;
-    case 0xe0 :  res = *p & 0x0f;  n = 2;  break;
+  switch (c & 0xf0) {
+    case 0xf0 :  res = c & 0x07;  n = 3;  break;
+    case 0xe0 :  res = c & 0x0f;  n = 2;  break;
     case 0xd0 :
-    case 0xc0 :  res = *p & 0x1f;  n = 1;  break;
-    default   :  res = *p;         n = 0;  break;
+    case 0xc0 :  res = c & 0x1f;  n = 1;  break;
+    default   :  res = c;         n = 0;  break;
   }
   while (n--) {
+    if ((*(p + 1) & 0xc0) != 0x80) {
+      /* invalid or truncated sequence: treat lead byte as raw byte */
+      *dst = c;
+      return p + 1;
+    }
     res = (res << 6) | (*(++p) & 0x3f);
   }
   *dst = res;

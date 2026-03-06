@@ -4,6 +4,7 @@
 #include <SDL3/SDL.h>
 #include "api/api.h"
 #include "renderer.h"
+#include "rencache.h"
 
 #ifdef _WIN32
   #include <windows.h>
@@ -58,7 +59,6 @@ int main(int argc, char **argv) {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_EnableScreenSaver();
   SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
-  atexit(SDL_Quit);
 
   SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
   SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
@@ -121,8 +121,12 @@ int main(int argc, char **argv) {
     "end)");
 
 
+  /* reset the command buffer so font GC finalizers' deferred frees
+  ** don't reference stale rendering state */
+  rencache_end_frame();
   lua_close(L);
   SDL_DestroyWindow(window);
+  SDL_Quit();
 
   return EXIT_SUCCESS;
 }

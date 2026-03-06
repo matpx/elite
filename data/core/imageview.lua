@@ -21,7 +21,14 @@ end
 function ImageView:new(filename)
   ImageView.super.new(self)
   self.filename = filename
-  self.image = renderer.image.load(filename)
+  self:reload()
+end
+
+
+function ImageView:reload()
+  local ok, img = pcall(renderer.image.load, self.filename)
+  if not ok then return end
+  self.image = img
   self.scaled = nil
   self.scaled_w = 0
   self.scaled_h = 0

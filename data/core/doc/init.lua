@@ -86,6 +86,14 @@ function Doc:load(filename)
 end
 
 
+function Doc:reload()
+  local sel = { self:get_selection() }
+  self:load(self.filename)
+  self:set_selection(table.unpack(sel))
+  self:clean()
+end
+
+
 function Doc:save(filename)
   filename = filename or assert(self.filename, "no filename set to default to")
   local fp = assert( io.open(filename, "wb") )

@@ -1,30 +1,10 @@
 local core = require "core"
 local config = require "core.config"
 local Doc = require "core.doc"
+local ImageView = require "core.imageview"
 
 
 local times = setmetatable({}, { __mode = "k" })
-
-local function update_time(doc)
-  local info = system.get_file_info(doc.filename)
-  times[doc] = info.modified
-end
-
-
-local function reload_doc(doc)
-  local fp = io.open(doc.filename, "r")
-  local text = fp:read("*a")
-  fp:close()
-
-  local sel = { doc:get_selection() }
-  doc:remove(1, 1, math.huge, math.huge)
-  doc:insert(1, 1, text:gsub("\r", ""):gsub("\n$", ""))
-  doc:set_selection(table.unpack(sel))
-
-  update_time(doc)
-  doc:clean()
-  core.log_quiet("Auto-reloaded doc \"%s\"", doc.filename)
-end
 
 
 core.add_thread(function()
@@ -33,7 +13,22 @@ core.add_thread(function()
     for _, doc in ipairs(core.docs) do
       local info = system.get_file_info(doc.filename or "")
       if info and times[doc] ~= info.modified then
-        reload_doc(doc)
+        doc:reload()
+        times[doc] = info.modified
+        core.log_quiet("Auto-reloaded doc \"%s\"", doc.filename)
+      end
+      coroutine.yield()
+    end
+
+    -- check open image views
+    for _, view in ipairs(core.root_view.root_node:get_children()) do
+      if view:is(ImageView) then
+        local info = system.get_file_info(view.filename or "")
+        if info and times[view] ~= info.modified then
+          view:reload()
+          times[view] = info.modified
+          core.log_quiet("Auto-reloaded image \"%s\"", view.filename)
+        end
       end
       coroutine.yield()
     end
@@ -50,12 +45,22 @@ local save = Doc.save
 
 Doc.load = function(self, ...)
   local res = load(self, ...)
-  update_time(self)
+  local info = system.get_file_info(self.filename)
+  if info then times[self] = info.modified end
   return res
 end
 
 Doc.save = function(self, ...)
   local res = save(self, ...)
-  update_time(self)
+  local info = system.get_file_info(self.filename)
+  if info then times[self] = info.modified end
   return res
+end
+
+-- patch ImageView to store modified time on creation
+local imageview_new = ImageView.new
+ImageView.new = function(self, ...)
+  imageview_new(self, ...)
+  local info = system.get_file_info(self.filename)
+  if info then times[self] = info.modified end
 end

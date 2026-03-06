@@ -37,12 +37,22 @@ command.add(nil, {
 
   ["core:find-command"] = function()
     local commands = command.get_all_valid()
+    local valid = {}
+    for _, name in ipairs(commands) do valid[name] = true end
     core.command_view:enter("Do Command", function(text, item)
       if item then
         command.perform(item.command)
       end
     end, function(text)
-      local res = common.fuzzy_match(commands, text)
+      local res
+      if text == "" then
+        res = {}
+        for _, name in ipairs(command.history) do
+          if valid[name] then table.insert(res, name) end
+        end
+      else
+        res = common.fuzzy_match(commands, text)
+      end
       for i, name in ipairs(res) do
         res[i] = {
           text = command.prettify_name(name),

@@ -2,9 +2,10 @@
 
 set -e
 
+cflags="-Wall -O3 -g -std=c11 -fno-strict-aliasing -Isrc"
+
 if echo "$*" | grep -q "windows"; then
   compiler="${CC:-winlib/tcc/tcc.exe}"
-  cflags="-Wall -O3 -std=c11 -fno-strict-aliasing -Isrc"
   cflags="$cflags -I./winlib/SDL3-3.4.2/x86_64-w64-mingw32/include"
 
   if echo "$compiler" | grep -q "tcc"; then
@@ -16,16 +17,8 @@ if echo "$*" | grep -q "windows"; then
   lflags="-Wl,-subsystem=windows -luser32 winlib/SDL3-3.4.2/x86_64-w64-mingw32/bin/SDL3.dll -o lite.exe"
 else
   compiler="${CC:-tcc}"
-  cflags="-Wall -O3 -std=c11 -fno-strict-aliasing -Isrc -DLUA_USE_POSIX -D_XOPEN_SOURCE=500"
+  cflags="$cflags -DLUA_USE_POSIX -D_XOPEN_SOURCE=500"
   lflags="-lSDL3 -lm -o lite"
-fi
-
-if echo "$*" | grep -q "debug"; then
-  cflags="$cflags -g -DLUA_USE_APICHECK"
-  # cflags="$cflags -b"
-  # lflags="$lflags -b"
-else
-  lflags="-s $lflags"
 fi
 
 echo "compiling..."

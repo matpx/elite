@@ -97,10 +97,10 @@ function DocView:draw_line_text(idx, x, y)
 
   if self.doc == state.doc and idx == state.line2 then
     local color = style.bracketmatch_color or style.syntax["function"]
-    local x1 = x + self:get_col_x_offset(idx, state.col2)
-    local x2 = x + self:get_col_x_offset(idx, state.col2 + 1)
-    local h = math.ceil(1 * SCALE)
-    renderer.draw_rect(x1, y + self:get_line_height() - h, x2 - x1, h, color)
+    local tx = x + self:get_col_x_offset(idx, state.col2)
+    local ty = y + self:get_line_text_y_offset()
+    local chr = self.doc.lines[idx]:sub(state.col2, state.col2)
+    renderer.draw_text(self:get_font(), chr, tx, ty, color)
   end
 end
 

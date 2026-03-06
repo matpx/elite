@@ -16,7 +16,7 @@ function Highlighter:new(doc)
     while true do
       if self.first_invalid_line > self.max_wanted_line then
         self.max_wanted_line = 0
-        coroutine.yield(1 / config.fps)
+        coroutine.yield(1 / config.max_fps)
 
       else
         local max = math.min(self.first_invalid_line + 40, self.max_wanted_line)

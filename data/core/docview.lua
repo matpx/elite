@@ -47,7 +47,7 @@ DocView.translate = {
   end,
 }
 
-local blink_period = 0.8
+local blink_period = 1.0
 
 
 function DocView:new(doc)
@@ -277,7 +277,7 @@ function DocView:update()
   if self == core.active_view and not self.mouse_selecting then
     local n = blink_period / 2
     local prev = self.blink_timer
-    self.blink_timer = (self.blink_timer + 1 / config.fps) % blink_period
+    self.blink_timer = (self.blink_timer + core.delta_time) % blink_period
     if (self.blink_timer > n) ~= (prev > n) then
       core.redraw = true
     end

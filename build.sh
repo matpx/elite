@@ -14,7 +14,9 @@ if echo "$*" | grep -q "windows"; then
     cflags="$cflags -Iwinlib/tcc/include/winapi"
   fi
 
-  lflags="-Wl,-subsystem=windows -luser32 winlib/SDL3-3.4.2/x86_64-w64-mingw32/bin/SDL3.dll -o lite.exe"
+  lflags="$lflags -Wl,-subsystem=windows"
+  lflags="$lflags -luser32 winlib/SDL3-3.4.2/x86_64-w64-mingw32/bin/SDL3.dll"
+  lflags="$lflags -o lite.exe"
 else
   compiler="${CC:-tcc}"
   cflags="$cflags -DLUA_USE_POSIX -D_XOPEN_SOURCE=500"

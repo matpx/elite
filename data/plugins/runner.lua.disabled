@@ -1,13 +1,10 @@
 -- Define a "runner" global in .lite_project.lua to enable build tasks:
 --
 --   global { runner = {
---     build = function()
---       local out, code = system.exec("make", true)
---       return code == 0, out
---     end,
+--     build = function() return io.popen("make"):close() end,
 --     run   = function() system.exec("./myapp") end,
 --     clean = function() os.remove("myapp") end,
---     test  = function() system.exec("make test", true) end,
+--     test  = function() system.exec("make test") end,
 --   } }
 --
 -- Keys: F5 = build + run, F7 = build only
@@ -26,16 +23,16 @@ local function run_task(name)
     core.error("runner: no '%s' function defined", name)
     return
   end
-  local ok, success, output = pcall(runner[name])
+  local ok, success = pcall(runner[name])
   if not ok then
     last_status = false
     core.error("runner %s error: %s", name, success)
   elseif success then
     last_status = true
-    core.log("runner %s succeeded\n%s", name, output or "")
+    core.log("runner %s succeeded", name)
   else
     last_status = false
-    core.error("runner %s failed\n%s", name, output or "")
+    core.error("runner %s failed", name)
   end
 end
 

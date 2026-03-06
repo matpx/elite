@@ -325,44 +325,20 @@ static int f_sleep(lua_State *L) {
 
 
 static int f_exec(lua_State *L) {
-  const char *cmd = luaL_checkstring(L, 1);
-  int blocking = lua_toboolean(L, 2);
-#ifdef _WIN32
-  const char *args[] = { "cmd.exe", "/c", cmd, NULL };
+  size_t len;
+  const char *cmd = luaL_checklstring(L, 1, &len);
+  char *buf = malloc(len + 32);
+  if (!buf) { luaL_error(L, "buffer allocation failed"); }
+#if _WIN32
+  sprintf(buf, "cmd /c \"%s\"", cmd);
+  WinExec(buf, SW_HIDE);
 #else
-  const char *args[] = { "/bin/sh", "-c", cmd, NULL };
+  sprintf(buf, "%s &", cmd);
+  int res = system(buf);
+  (void) res;
 #endif
-  SDL_PropertiesID props = SDL_CreateProperties();
-  SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, (void *)args);
-  if (blocking) {
-    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
-    SDL_SetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_TO_STDOUT_BOOLEAN, true);
-  }
-  SDL_Process *proc = SDL_CreateProcessWithProperties(props);
-  SDL_DestroyProperties(props);
-  if (!proc) {
-    lua_pushnil(L);
-    lua_pushinteger(L, -1);
-    return 2;
-  }
-  if (!blocking) {
-    SDL_DestroyProcess(proc);
-    lua_pushboolean(L, 1);
-    lua_pushinteger(L, 0);
-    return 2;
-  }
-  size_t len = 0;
-  int exitcode = -1;
-  char *output = (char *)SDL_ReadProcess(proc, &len, &exitcode);
-  if (output) {
-    lua_pushlstring(L, output, len);
-    SDL_free(output);
-  } else {
-    lua_pushstring(L, "");
-  }
-  SDL_DestroyProcess(proc);
-  lua_pushinteger(L, exitcode);
-  return 2;
+  free(buf);
+  return 0;
 }
 
 

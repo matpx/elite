@@ -3,8 +3,7 @@ local output = windows and "lite.exe" or "lite"
 
 global { runner = {
   build = function()
-    local out, code = system.exec(windows and "build.bat" or "./build.sh", true)
-    return code == 0, out
+    return io.popen(windows and "build.bat" or "./build.sh"):close()
   end,
 
   run = function()

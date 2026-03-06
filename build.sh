@@ -6,17 +6,22 @@ cflags="-Wall -O3 -g -std=c11 -fno-strict-aliasing -Isrc"
 
 if echo "$*" | grep -q "windows"; then
   compiler="${CC:-winlib/tcc/tcc.exe}"
+
   cflags="$cflags -I./winlib/SDL3-3.4.2/x86_64-w64-mingw32/include"
+
+  lflags="$lflags -Wl,-subsystem=windows"
+  lflags="$lflags -luser32 winlib/SDL3-3.4.2/x86_64-w64-mingw32/bin/SDL3.dll"
+  lflags="$lflags -o lite.exe"
 
   if echo "$compiler" | grep -q "tcc"; then
     cflags="$cflags -Bwinlib/tcc"
     cflags="$cflags -Iwinlib/tcc/include/ -I./winlib/tcc/include/sys"
     cflags="$cflags -Iwinlib/tcc/include/winapi"
+  else
+    x86_64-w64-mingw32-windres res.rc -O coff -o res.res
+    lflags="$lflags res.res"
   fi
 
-  lflags="$lflags -Wl,-subsystem=windows"
-  lflags="$lflags -luser32 winlib/SDL3-3.4.2/x86_64-w64-mingw32/bin/SDL3.dll"
-  lflags="$lflags -o lite.exe"
 else
   compiler="${CC:-tcc}"
   cflags="$cflags -DLUA_USE_POSIX -D_XOPEN_SOURCE=500"
@@ -33,7 +38,10 @@ echo "cleaning up..."
 rm -f *.o
 
 if echo "$*" | grep -q "windows"; then
-  ./winlib/rcedit/rcedit-x64.exe lite.exe --set-icon icon.ico
+  if echo "$compiler" | grep -q "tcc"; then
+    ./winlib/rcedit/rcedit-x64.exe lite.exe --set-icon icon.ico
+  fi
+
   cp winlib/SDL3-3.4.2/x86_64-w64-mingw32/bin/SDL3.dll .
 fi
 

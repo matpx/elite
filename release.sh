@@ -11,4 +11,4 @@ strip lite.exe
 strip lite
 
 rm -f lite.zip 2>/dev/null
-zip lite.zip lite lite.exe SDL3.dll data -r
+zip lite.zip lite lite.exe SDL3.dll data -r -T -9

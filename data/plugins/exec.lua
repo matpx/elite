@@ -25,6 +25,14 @@ local function printfb_quote(str)
 end
 
 
+command.add(nil, {
+  ["exec:run"] = function()
+    core.command_view:enter("Run Command", function(cmd)
+      system.exec(cmd)
+    end)
+  end,
+})
+
 command.add("core.docview", {
   ["exec:insert"] = function()
     core.command_view:enter("Insert Result Of Command", function(cmd)

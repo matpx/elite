@@ -9,6 +9,9 @@
 #include "rencache.h"
 #ifdef _WIN32
   #include <windows.h>
+#else
+  #include <sys/inotify.h>
+  #include <dirent.h>
 #endif
 
 extern SDL_Window *window;
@@ -368,6 +371,94 @@ static int f_fuzzy_match(lua_State *L) {
 }
 
 
+/* dirmonitor: poll project dir for changes */
+#ifdef _WIN32
+
+static HANDLE dm_handle = INVALID_HANDLE_VALUE;
+
+static int f_watch_dir(lua_State *L) {
+  const char *path = luaL_checkstring(L, 1);
+  if (dm_handle != INVALID_HANDLE_VALUE)
+    FindCloseChangeNotification(dm_handle);
+  dm_handle = FindFirstChangeNotificationA(
+    path, TRUE,
+    FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
+    FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE
+  );
+  return 0;
+}
+
+static int f_watch_dir_poll(lua_State *L) {
+  if (dm_handle == INVALID_HANDLE_VALUE) {
+    lua_pushboolean(L, 0);
+    return 1;
+  }
+  DWORD res = WaitForSingleObject(dm_handle, 0);
+  if (res == WAIT_OBJECT_0) {
+    FindNextChangeNotification(dm_handle);
+    lua_pushboolean(L, 1);
+  } else {
+    lua_pushboolean(L, 0);
+  }
+  return 1;
+}
+
+#else
+
+static int dm_fd = -1;
+
+static void dm_watch_recursive(const char *path) {
+  int flags = IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO;
+  inotify_add_watch(dm_fd, path, flags);
+  DIR *dir = opendir(path);
+  if (!dir) return;
+  struct dirent *entry;
+  char child[4096];
+  while ((entry = readdir(dir))) {
+    if (entry->d_name[0] == '.') continue;
+    snprintf(child, sizeof(child), "%s/%s", path, entry->d_name);
+    struct stat st;
+    if (stat(child, &st) == 0 && S_ISDIR(st.st_mode))
+      dm_watch_recursive(child);
+  }
+  closedir(dir);
+}
+
+static int f_watch_dir(lua_State *L) {
+  const char *path = luaL_checkstring(L, 1);
+  if (dm_fd >= 0) close(dm_fd);
+  dm_fd = inotify_init1(IN_NONBLOCK);
+  if (dm_fd < 0) return 0;
+  dm_watch_recursive(path);
+  return 0;
+}
+
+static int f_watch_dir_poll(lua_State *L) {
+  if (dm_fd < 0) {
+    lua_pushboolean(L, 0);
+    return 1;
+  }
+  char buf[4096];
+  int n = read(dm_fd, buf, sizeof(buf));
+  lua_pushboolean(L, n > 0);
+  return 1;
+}
+
+#endif
+
+static int f_get_temp_dir(lua_State *L) {
+#ifdef _WIN32
+  char buf[MAX_PATH];
+  DWORD len = GetTempPathA(MAX_PATH, buf);
+  if (len > 0 && buf[len - 1] == '\\') buf[len - 1] = '\0';
+  lua_pushstring(L, buf);
+#else
+  const char *dir = getenv("TMPDIR");
+  lua_pushstring(L, dir ? dir : "/tmp");
+#endif
+  return 1;
+}
+
 static const luaL_Reg lib[] = {
   { "poll_event",          f_poll_event          },
   { "wait_event",          f_wait_event          },
@@ -386,6 +477,9 @@ static const luaL_Reg lib[] = {
   { "sleep",               f_sleep               },
   { "exec",                f_exec                },
   { "fuzzy_match",         f_fuzzy_match         },
+  { "get_temp_dir",        f_get_temp_dir        },
+  { "watch_dir",           f_watch_dir           },
+  { "watch_dir_poll",      f_watch_dir_poll      },
   { NULL, NULL }
 };
 

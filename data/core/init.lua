@@ -60,16 +60,16 @@ local function project_scan_thread()
     return t
   end
 
+  local last_change_count = 0
   while true do
-    -- get project files and replace previous table if the new table is
-    -- different
-    local t = get_files(".")
-    if diff_files(core.project_files, t) then
-      core.project_files = t
-      core.redraw = true
+    if core.project_change_count ~= last_change_count then
+      last_change_count = core.project_change_count
+      local t = get_files(".")
+      if diff_files(core.project_files, t) then
+        core.project_files = t
+        core.redraw = true
+      end
     end
-
-    -- wait for next scan
     coroutine.yield(config.project_scan_rate)
   end
 end
@@ -96,6 +96,7 @@ function core.init()
   end
 
   system.chdir(project_dir)
+  system.watch_dir(".")
 
   core.frame_start = 0
   core.clip_rect_stack = {{ 0,0,0,0 }}
@@ -128,21 +129,22 @@ function core.init()
 end
 
 
+local temp_dir = system.get_temp_dir()
 local temp_uid = math.floor((system.get_time() * 1000) % 0xffffffff)
-local temp_file_prefix = string.format(".lite_temp_%08x", temp_uid)
+local temp_file_prefix = string.format("lite_temp_%08x", temp_uid)
 local temp_file_counter = 0
 
 local function delete_temp_files()
-  for _, filename in ipairs(system.list_dir(EXEDIR)) do
+  for _, filename in ipairs(system.list_dir(temp_dir) or {}) do
     if filename:find(temp_file_prefix, 1, true) == 1 then
-      os.remove(EXEDIR .. PATHSEP .. filename)
+      os.remove(temp_dir .. PATHSEP .. filename)
     end
   end
 end
 
 function core.temp_filename(ext)
   temp_file_counter = temp_file_counter + 1
-  return EXEDIR .. PATHSEP .. temp_file_prefix
+  return temp_dir .. PATHSEP .. temp_file_prefix
       .. string.format("%06x", temp_file_counter) .. (ext or "")
 end
 
@@ -375,6 +377,10 @@ end
 
 
 function core.step()
+  if system.watch_dir_poll() then
+    core.project_change_count = (core.project_change_count or 0) + 1
+  end
+
   -- handle events
   local did_keymap = false
   local mouse_moved = false

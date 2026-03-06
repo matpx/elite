@@ -8,6 +8,7 @@ local RootView
 local StatusView
 local CommandView
 local Doc
+local ImageView
 
 local core = {}
 
@@ -81,6 +82,7 @@ function core.init()
   StatusView = require "core.statusview"
   CommandView = require "core.commandview"
   Doc = require "core.doc"
+  ImageView = require "core.imageview"
 
   local project_dir = EXEDIR
   local files = {}
@@ -117,7 +119,7 @@ function core.init()
   local got_project_error = not core.load_project_module()
 
   for _, filename in ipairs(files) do
-    core.root_view:open_doc(core.open_doc(filename))
+    core.try(core.open_file, filename)
   end
 
   if got_plugin_error or got_user_error or got_project_error then
@@ -268,6 +270,21 @@ function core.open_doc(filename)
 end
 
 
+function core.open_image(filename)
+  local view = ImageView(filename)
+  core.log_quiet("Opened image \"%s\"", filename)
+  return view
+end
+
+
+function core.open_file(filename)
+  if filename and ImageView.is_image(filename) then
+    return core.root_view:open_image(core.open_image(filename))
+  end
+  return core.root_view:open_doc(core.open_doc(filename))
+end
+
+
 function core.get_views_referencing_doc(doc)
   local res = {}
   local views = core.root_view.root_node:get_children()
@@ -346,12 +363,9 @@ function core.on_event(type, ...)
     if info and info.type == "dir" then
       system.exec(string.format("%q %q", EXEFILE, filename))
     else
-      local ok, doc = core.try(core.open_doc, filename)
-      if ok then
-        local node = core.root_view.root_node:get_child_overlapping_point(mx, my)
-        node:set_active_view(node.active_view)
-        core.root_view:open_doc(doc)
-      end
+      local node = core.root_view.root_node:get_child_overlapping_point(mx, my)
+      node:set_active_view(node.active_view)
+      core.try(core.open_file, filename)
     end
   elseif type == "quit" then
     core.quit()

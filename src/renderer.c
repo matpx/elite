@@ -4,6 +4,9 @@
 #include <assert.h>
 #include <math.h>
 #include "lib/stb/stb_truetype.h"
+#include "lib/stb/stb_image.h"
+#include "lib/qoi/qoi.h"
+#include "lib/stb/stb_image_resize2.h"
 #include "renderer.h"
 
 #define MAX_GLYPHSET 256
@@ -92,7 +95,7 @@ void ren_get_size(int *x, int *y) {
 
 RenImage* ren_new_image(int width, int height) {
   assert(width > 0 && height > 0);
-  RenImage *image = malloc(sizeof(RenImage) + width * height * sizeof(RenColor));
+  RenImage *image = malloc(sizeof(RenImage) + (size_t) width * height * sizeof(RenColor));
   check_alloc(image);
   image->pixels = (void*) (image + 1);
   image->width = width;
@@ -101,8 +104,75 @@ RenImage* ren_new_image(int width, int height) {
 }
 
 
+RenImage* ren_load_image(const char *filename) {
+  int w, h, n;
+  unsigned char *data = NULL;
+
+  const char *ext = strrchr(filename, '.');
+  const bool is_qoi = ext && strcmp(ext, ".qoi") == 0;
+
+  if (is_qoi) {
+    /* QOI */
+    qoi_desc desc;
+    data = qoi_read(filename, &desc, 4);
+    if (!data) { return NULL; }
+
+    w = desc.width;
+    h = desc.height;
+
+  } else {
+    /* stb_image */
+    data = stbi_load(filename, &w, &h, &n, 4);
+    if (!data) { return NULL; }
+  }
+
+  RenImage *image = ren_new_image(w, h);
+  if (!image) { free(data); return NULL; }
+
+  /* convert RGBA -> BGRA */
+  RenColor *dst = image->pixels;
+  unsigned char *src = data;
+
+  for (int i = 0; i < w * h; i++) {
+    dst[i] = (RenColor){ .r = src[0], .g = src[1], .b = src[2], .a = src[3] };
+    src += 4;
+  }
+
+  if (is_qoi) {
+    free(data);
+  }
+  else {
+    stbi_image_free(data);
+  }
+
+  return image;
+}
+
+
+RenImage* ren_resize_image(RenImage *image, int new_w, int new_h) {
+  RenImage *resized = ren_new_image(new_w, new_h);
+  if (!resized) { return NULL; }
+  unsigned char *result = stbir_resize_uint8_linear(
+    (unsigned char *)image->pixels, image->width, image->height, image->width * 4,
+    (unsigned char *)resized->pixels, new_w, new_h, new_w * 4,
+    STBIR_BGRA);
+  if (!result) { ren_free_image(resized); return NULL; }
+  return resized;
+}
+
+
 void ren_free_image(RenImage *image) {
   free(image);
+}
+
+
+int ren_get_image_width(RenImage *image) {
+  return image->width;
+}
+
+
+int ren_get_image_height(RenImage *image) {
+  return image->height;
 }
 
 

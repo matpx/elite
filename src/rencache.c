@@ -12,13 +12,14 @@
 #define CELL_SIZE 96
 #define COMMAND_BUF_SIZE (1024 * 512)
 
-enum { FREE_FONT, SET_CLIP, DRAW_TEXT, DRAW_RECT };
+enum { FREE_FONT, SET_CLIP, DRAW_TEXT, DRAW_RECT, DRAW_IMAGE };
 
 typedef struct {
   int type, size;
   RenRect rect;
   RenColor color;
   RenFont *font;
+  RenImage *image;
   int tab_width;
   char text[0];
 } Command;
@@ -130,6 +131,18 @@ void rencache_draw_rect(RenRect rect, RenColor color) {
 }
 
 
+void rencache_draw_image(RenImage *image, int x, int y, RenColor color) {
+  RenRect rect = { x, y, ren_get_image_width(image), ren_get_image_height(image) };
+  if (!rects_overlap(screen_rect, rect)) { return; }
+  Command *cmd = push_command(DRAW_IMAGE, sizeof(Command));
+  if (cmd) {
+    cmd->rect = rect;
+    cmd->color = color;
+    cmd->image = image;
+  }
+}
+
+
 int rencache_draw_text(RenFont *font, const char *text, int x, int y, RenColor color) {
   RenRect rect;
   rect.x = x;
@@ -175,6 +188,8 @@ static void update_overlapping_cells(RenRect r, unsigned h) {
   int y1 = r.y / CELL_SIZE;
   int x2 = (r.x + r.width) / CELL_SIZE;
   int y2 = (r.y + r.height) / CELL_SIZE;
+  if (x2 >= CELLS_X) { x2 = CELLS_X - 1; }
+  if (y2 >= CELLS_Y) { y2 = CELLS_Y - 1; }
 
   for (int y = y1; y <= y2; y++) {
     for (int x = x1; x <= x2; x++) {
@@ -256,6 +271,11 @@ void rencache_end_frame(void) {
         case DRAW_RECT:
           ren_draw_rect(cmd->rect, cmd->color);
           break;
+        case DRAW_IMAGE: {
+          RenRect sub = { 0, 0, cmd->rect.width, cmd->rect.height };
+          ren_draw_image(cmd->image, &sub, cmd->rect.x, cmd->rect.y, cmd->color);
+          break;
+        }
         case DRAW_TEXT:
           ren_set_font_tab_width(cmd->font, cmd->tab_width);
           ren_draw_text(cmd->font, cmd->text, cmd->rect.x, cmd->rect.y, cmd->color);

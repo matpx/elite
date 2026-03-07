@@ -2,7 +2,7 @@ local config = {}
 
 config.project_scan_rate = 2
 config.fps = 60
-config.idle_timeout = 10
+config.idle_timeout = 15
 config.max_log_items = 80
 config.message_timeout = 3
 config.mouse_wheel_scroll = 50 * SCALE

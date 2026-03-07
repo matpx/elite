@@ -485,9 +485,10 @@ function core.run()
 
     local should_idle = not system.window_has_focus()
       or core.last_input_time + config.idle_timeout < system.get_time()
+
     if should_idle ~= core.is_idle then
       core.is_idle = should_idle
-      core.redraw = true
+      core.redraw = core.redraw or should_idle
     end
 
     local did_redraw = core.step()

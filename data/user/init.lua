@@ -9,5 +9,5 @@ local style = require "core.style"
 -- require "user.colors.summer"
 
 -- key binding:
--- keymap.add { ["ctrl+escape"] = "core:quit" }
+keymap.add { ["ctrl+q"] = "core:quit" }
 

@@ -147,7 +147,7 @@ keymap.add {
   ["ctrl+a"] = "doc:select-all",
   ["ctrl+d"] = { "find-replace:select-next", "doc:select-word" },
   ["ctrl+l"] = "doc:select-lines",
-  ["ctrl+/"] = "doc:toggle-line-comments",
+  ["ctrl+k"] = "doc:toggle-line-comments",
   ["ctrl+up"] = "doc:move-lines-up",
   ["ctrl+down"] = "doc:move-lines-down",
   ["ctrl+shift+d"] = "doc:duplicate-lines",

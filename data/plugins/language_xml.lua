@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xb2\xb4",
   files = { "%.xml$", "%.html?$" },
   headers = "<%?xml",
   patterns = {

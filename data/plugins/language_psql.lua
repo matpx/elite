@@ -73,6 +73,7 @@ for _, literal in ipairs(literals) do
 end
 
 syntax.add {
+  icon = "\xee\xad\xb9",
   files = { "%.sql$", "%.psql$" },
   comment = "--",
   patterns = {

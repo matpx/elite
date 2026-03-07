@@ -40,6 +40,7 @@ local function prepare_symbols(symtable)
 end
 
 syntax.add {
+  icon = "\xee\xb5\x95",
   files = { "%.bat$", "%.cmd$" },
   comment = "rem",
   patterns = {

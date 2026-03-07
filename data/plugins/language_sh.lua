@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xb5\x95",
   files = { "%.sh$" },
   headers = "^#!.*bin.*sh\n",
   comment = "#",

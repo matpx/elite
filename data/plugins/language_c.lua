@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xb6\xae",
   files = { "%.c$", "%.h$", "%.inl$", "%.cpp$", "%.hpp$" },
   comment = "//",
   patterns = {

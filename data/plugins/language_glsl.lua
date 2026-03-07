@@ -5,6 +5,7 @@ local common = require "core.common"
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xad\x8a",
   files = { "%.glsl$", "%.frag$", "%.vert$", },
   comment = "//",
   patterns = {

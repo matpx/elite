@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xa5\xba",
   files = { "%.cmake$", "CMakeLists.txt$" },
   comment = "//",
   patterns = {

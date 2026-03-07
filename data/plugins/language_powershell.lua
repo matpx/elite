@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+    icon = "\xee\xad\xbd",
     files = {"%.ps1$", "%.psm1$", "%.psd1$", "%.ps1xml$", "%.pssc$", "%.psrc$", "%.cdxml$"},
     comment = "#",
     patterns = {

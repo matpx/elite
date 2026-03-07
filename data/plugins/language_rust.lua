@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xaf\xa6",
   files = { "%.rs$" },
   comment = "//",
   patterns = {

@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xab\x93",
   files = "%.lua$",
   headers = "^#!.*[ /]lua",
   comment = "--",

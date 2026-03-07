@@ -3,6 +3,7 @@ pcall(require, "plugins.language_c")
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xa6\x9a",
   files = {
     "%.h$", "%.inl$", "%.cpp$", "%.cc$", "%.C$", "%.cxx$",
     "%.c++$", "%.hh$", "%.H$", "%.hxx$", "%.hpp$", "%.h++$"

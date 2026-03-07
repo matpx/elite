@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xa6\xaa",
   files = { "%.dart$" },
   comment = "//",
   patterns = {

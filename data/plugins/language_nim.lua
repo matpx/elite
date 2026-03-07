@@ -111,6 +111,7 @@ for _, pattern in ipairs(user_patterns) do
 end
 
 local nim = {
+  icon = "\xee\xac\x9e",
   files = { "%.nim$", "%.nims$", "%.nimble$" },
   comment = "#",
   patterns = patterns,

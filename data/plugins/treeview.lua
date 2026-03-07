@@ -5,6 +5,7 @@ local config = require "core.config"
 local keymap = require "core.keymap"
 local style = require "core.style"
 local View = require "core.view"
+local syntax = require "core.syntax"
 
 config.treeview_min_size = 200 * SCALE
 
@@ -171,8 +172,13 @@ function TreeView:draw()
       common.draw_text(style.icon_font, color, icon2, nil, x, y, 0, h)
       x = x + icon_width
     else
+      local icon_char = syntax.get(item.name, "").icon
       x = x + style.padding.x
-      common.draw_text(style.icon_font, color, "f", nil, x, y, 0, h)
+      if icon_char then
+        common.draw_text(style.language_font, color, icon_char, nil, x, y, 0, h)
+      else
+        common.draw_text(style.icon_font, color, "f", nil, x, y, 0, h)
+      end
       x = x + icon_width
     end
 

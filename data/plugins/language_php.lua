@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xad\xa8",
   files = { "%.php$", "%.phtml" },
   headers = "^<%?php",
   comment = "//",

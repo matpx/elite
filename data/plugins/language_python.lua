@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+  icon = "\xee\xae\x9c",
   files = { "%.py$", "%.pyw$" },
   headers = "^#!.*[ /]python",
   comment = "#",

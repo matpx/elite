@@ -22,13 +22,21 @@ jobs:
       - name: Build
         run: sh build.sh
 
-  windows:
+  windows-bat:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build
         shell: cmd
         run: build.bat
+
+  windows-sh:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        shell: bash
+        run: sh build.sh windows
 
   release:
     runs-on: ubuntu-latest

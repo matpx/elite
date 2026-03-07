@@ -8,9 +8,11 @@ if echo "$*" | grep -q "windows"; then
   compiler="${CC:-winlib/tcc/tcc.exe}"
 
   cflags="$cflags -I./winlib/SDL3-3.4.2/x86_64-w64-mingw32/include"
+  cflags="$cflags -I./winlib/SDL3_ttf-3.2.2/x86_64-w64-mingw32/include"
 
   lflags="$lflags -Wl,-subsystem=windows"
   lflags="$lflags -luser32 winlib/SDL3-3.4.2/x86_64-w64-mingw32/bin/SDL3.dll"
+  lflags="$lflags winlib/SDL3_ttf-3.2.2/x86_64-w64-mingw32/bin/SDL3_ttf.dll"
   lflags="$lflags -o lite.exe"
 
   if echo "$compiler" | grep -q "tcc"; then
@@ -25,7 +27,7 @@ if echo "$*" | grep -q "windows"; then
 else
   compiler="${CC:-tcc}"
   cflags="$cflags -DLUA_USE_POSIX -D_XOPEN_SOURCE=500"
-  lflags="-lSDL3 -lm -o lite"
+  lflags="-lSDL3 -lSDL3_ttf -lm -o lite"
 fi
 
 echo "compiling..."
@@ -43,6 +45,7 @@ if echo "$*" | grep -q "windows"; then
   fi
 
   cp winlib/SDL3-3.4.2/x86_64-w64-mingw32/bin/SDL3.dll .
+  cp winlib/SDL3_ttf-3.2.2/x86_64-w64-mingw32/bin/SDL3_ttf.dll .
 fi
 
 echo "done"

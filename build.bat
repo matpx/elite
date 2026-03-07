@@ -15,12 +15,15 @@ for /r src %%f in (*.c) do set srcs=!srcs! %%f
 %compiler% -Bwinlib\tcc %srcs% ^
     -Wall -O3 -g -std=c11 -fno-strict-aliasing -Isrc ^
     -I.\winlib\SDL3-3.4.2\x86_64-w64-mingw32\include ^
+    -I.\winlib\SDL3_ttf-3.2.2\x86_64-w64-mingw32\include ^
     -Iwinlib\tcc\include\ -I.\winlib\tcc\include\sys ^
     -Iwinlib\tcc\include\winapi -Wl,-subsystem=windows -luser32 ^
     winlib\SDL3-3.4.2\x86_64-w64-mingw32\bin\SDL3.dll ^
+    winlib\SDL3_ttf-3.2.2\x86_64-w64-mingw32\bin\SDL3_ttf.dll ^
     -o lite.exe || exit /b 1
 
 winlib\rcedit\rcedit-x64.exe lite.exe --set-icon icon.ico
 copy winlib\SDL3-3.4.2\x86_64-w64-mingw32\bin\SDL3.dll . >nul
+copy winlib\SDL3_ttf-3.2.2\x86_64-w64-mingw32\bin\SDL3_ttf.dll . >nul
 
 echo done

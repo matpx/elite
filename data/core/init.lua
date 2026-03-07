@@ -106,6 +106,8 @@ function core.init()
   core.project_files = {}
   core.redraw = true
   core.project_change_time = system.get_time()
+  core.last_input_time = system.get_time()
+  core.is_idle = false
 
   core.root_view = RootView()
   core.command_view = CommandView()
@@ -386,6 +388,7 @@ function core.step()
   local did_keymap = false
   local mouse_moved = false
   local mouse = { x = 0, y = 0, dx = 0, dy = 0 }
+  local did_input = false
 
   for type, a,b,c,d in system.poll_event do
     if type == "mousemoved" then
@@ -399,9 +402,14 @@ function core.step()
       did_keymap = res or did_keymap
     end
     core.redraw = true
+    did_input = true
   end
   if mouse_moved then
     core.try(core.on_event, "mousemoved", mouse.x, mouse.y, mouse.dx, mouse.dy)
+  end
+
+  if did_input then
+    core.last_input_time = system.get_time()
   end
 
   local width, height = renderer.get_size()
@@ -474,11 +482,21 @@ end)
 function core.run()
   while true do
     core.frame_start = system.get_time()
+
+    local should_idle = not system.window_has_focus()
+      or core.last_input_time + config.idle_timeout < system.get_time()
+    if should_idle ~= core.is_idle then
+      core.is_idle = should_idle
+      core.redraw = true
+    end
+
     local did_redraw = core.step()
     run_threads()
-    if not did_redraw and not system.window_has_focus() then
-      system.wait_event(0.25)
+
+    if not did_redraw and core.is_idle then
+      system.wait_event(1.0)
     end
+
     local elapsed = system.get_time() - core.frame_start
     system.sleep(math.max(0, 1 / config.fps - elapsed))
   end

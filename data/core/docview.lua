@@ -272,6 +272,11 @@ function DocView:update()
     self.blink_timer = 0
     self.last_line, self.last_col = line, col
   end
+  
+  if self.last_idle_state ~= core.is_idle then
+    self.last_idle_state = core.is_idle
+    self.blink_timer = 0
+  end
 
   -- update blink timer
   if self == core.active_view and not self.mouse_selecting then
@@ -329,8 +334,9 @@ function DocView:draw_line_body(idx, x, y)
 
   -- draw caret if it overlaps this line
   if line == idx and core.active_view == self
-  and self.blink_timer < blink_period / 2
-  and system.window_has_focus() then
+  and (core.is_idle or self.blink_timer < blink_period / 2)
+  and system.window_has_focus()
+  then
     local lh = self:get_line_height()
     local x1 = x + self:get_col_x_offset(line, col)
     renderer.draw_rect(x1, y, style.caret_width, lh, style.caret)

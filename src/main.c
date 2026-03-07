@@ -19,7 +19,7 @@ SDL_Window *window;
 
 
 static double get_scale(void) {
-  return SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+  return SDL_GetWindowDisplayScale(window);
 }
 
 
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 
   window = SDL_CreateWindow(
     "", dm->w * 0.8, dm->h * 0.8,
-    SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
+    SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
   init_window_icon();
   ren_init(window);
 

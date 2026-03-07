@@ -47,16 +47,21 @@ top:
     return 0;
   }
 
+  float pd = SDL_GetWindowPixelDensity(window);
+
   switch (e.type) {
     case SDL_EVENT_QUIT:
       lua_pushstring(L, "quit");
       return 1;
 
-    case SDL_EVENT_WINDOW_RESIZED:
+    case SDL_EVENT_WINDOW_RESIZED: {
+      int pw, ph;
+      SDL_GetWindowSizeInPixels(window, &pw, &ph);
       lua_pushstring(L, "resized");
-      lua_pushnumber(L, e.window.data1);
-      lua_pushnumber(L, e.window.data2);
+      lua_pushnumber(L, pw);
+      lua_pushnumber(L, ph);
       return 3;
+    }
 
     case SDL_EVENT_WINDOW_EXPOSED:
       rencache_invalidate();
@@ -73,8 +78,8 @@ top:
     case SDL_EVENT_DROP_FILE:
       lua_pushstring(L, "filedropped");
       lua_pushstring(L, e.drop.data);
-      lua_pushnumber(L, (int) e.drop.x);
-      lua_pushnumber(L, (int) e.drop.y);
+      lua_pushnumber(L, (int) (e.drop.x * pd));
+      lua_pushnumber(L, (int) (e.drop.y * pd));
       return 4;
 
     case SDL_EVENT_KEY_DOWN:
@@ -96,8 +101,8 @@ top:
       if (e.button.button == 1) { SDL_CaptureMouse(true); }
       lua_pushstring(L, "mousepressed");
       lua_pushstring(L, button_name(e.button.button));
-      lua_pushnumber(L, (int) e.button.x);
-      lua_pushnumber(L, (int) e.button.y);
+      lua_pushnumber(L, (int) (e.button.x * pd));
+      lua_pushnumber(L, (int) (e.button.y * pd));
       lua_pushnumber(L, e.button.clicks);
       return 5;
 
@@ -105,16 +110,16 @@ top:
       if (e.button.button == 1) { SDL_CaptureMouse(false); }
       lua_pushstring(L, "mousereleased");
       lua_pushstring(L, button_name(e.button.button));
-      lua_pushnumber(L, (int) e.button.x);
-      lua_pushnumber(L, (int) e.button.y);
+      lua_pushnumber(L, (int) (e.button.x * pd));
+      lua_pushnumber(L, (int) (e.button.y * pd));
       return 4;
 
     case SDL_EVENT_MOUSE_MOTION:
       lua_pushstring(L, "mousemoved");
-      lua_pushnumber(L, (int) e.motion.x);
-      lua_pushnumber(L, (int) e.motion.y);
-      lua_pushnumber(L, (int) e.motion.xrel);
-      lua_pushnumber(L, (int) e.motion.yrel);
+      lua_pushnumber(L, (int) (e.motion.x * pd));
+      lua_pushnumber(L, (int) (e.motion.y * pd));
+      lua_pushnumber(L, (int) (e.motion.xrel * pd));
+      lua_pushnumber(L, (int) (e.motion.yrel * pd));
       return 5;
 
     case SDL_EVENT_MOUSE_WHEEL:

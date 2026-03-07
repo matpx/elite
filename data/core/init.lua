@@ -483,8 +483,10 @@ function core.run()
   while true do
     core.frame_start = system.get_time()
 
-    local should_idle = not system.window_has_focus()
+    local should_idle = config.idle_timeout > 0 and (
+      not system.window_has_focus()
       or core.last_input_time + config.idle_timeout < system.get_time()
+    )
 
     if should_idle ~= core.is_idle then
       core.is_idle = should_idle

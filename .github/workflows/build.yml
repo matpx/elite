@@ -1,0 +1,51 @@
+name: Build
+
+on:
+  push:
+    branches: [main, sdl3-migration]
+  pull_request:
+    branches: [main]
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tcc cmake libx11-dev libxext-dev libxcursor-dev libxi-dev libxfixes-dev libxrandr-dev libxss-dev libxtst-dev libwayland-dev libxkbcommon-dev libegl-dev libdecor-0-dev libpulse-dev libasound2-dev
+          git clone --depth 1 --branch release-3.4.2 https://github.com/libsdl-org/SDL.git /tmp/SDL3
+          cmake -S /tmp/SDL3 -B /tmp/SDL3/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/SDL3/build -j$(nproc)
+          sudo cmake --install /tmp/SDL3/build
+      - name: Build
+        run: sh build.sh
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        shell: cmd
+        run: build.bat
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libx11-dev libxext-dev libxcursor-dev libxi-dev libxfixes-dev libxrandr-dev libxss-dev libxtst-dev libwayland-dev libxkbcommon-dev libegl-dev libdecor-0-dev libpulse-dev libasound2-dev gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+          git clone --depth 1 --branch release-3.4.2 https://github.com/libsdl-org/SDL.git /tmp/SDL3
+          cmake -S /tmp/SDL3 -B /tmp/SDL3/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/SDL3/build -j$(nproc)
+          sudo cmake --install /tmp/SDL3/build
+      - name: Build release
+        run: sh release.sh
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lite.zip
+          path: lite.zip

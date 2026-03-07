@@ -503,7 +503,7 @@ function core.run()
     run_threads()
 
     if not did_redraw and core.is_idle then
-      system.wait_event(1.0)
+      system.wait_event(1 / config.idle_fps)
     end
 
     local elapsed = system.get_time() - core.frame_start

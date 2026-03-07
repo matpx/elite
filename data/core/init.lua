@@ -60,10 +60,10 @@ local function project_scan_thread()
     return t
   end
 
-  local last_change_count = 0
+  local last_change_time = 0
   while true do
-    if core.project_change_count ~= last_change_count then
-      last_change_count = core.project_change_count
+    if core.project_change_time ~= last_change_time then
+      last_change_time = core.project_change_time
       local t = get_files(".")
       if diff_files(core.project_files, t) then
         core.project_files = t
@@ -105,6 +105,7 @@ function core.init()
   core.threads = setmetatable({}, { __mode = "k" })
   core.project_files = {}
   core.redraw = true
+  core.project_change_time = system.get_time()
 
   core.root_view = RootView()
   core.command_view = CommandView()
@@ -378,7 +379,7 @@ end
 
 function core.step()
   if system.watch_dir_poll() then
-    core.project_change_count = (core.project_change_count or 0) + 1
+    core.project_change_time = system.get_time()
   end
 
   -- handle events

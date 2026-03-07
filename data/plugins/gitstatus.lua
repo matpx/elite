@@ -23,12 +23,12 @@ local function exec(cmd, wait)
 end
 
 
-local last_changed = 0
+local last_change_time = 0
 
 core.add_thread(function()
   while true do
-    if core.project_change_count ~= last_changed then
-      last_changed = core.project_change_count
+    if core.project_change_time ~= last_change_time then
+      last_change_time = core.project_change_time
       if system.get_file_info(".git") then
         -- get branch name
         git.branch = exec("git rev-parse --abbrev-ref HEAD", 1):match("[^\n]*")

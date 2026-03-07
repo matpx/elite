@@ -324,21 +324,23 @@ int ren_get_font_height(RenFont *font) {
 }
 
 
+#define DIV255(x) (((x) + 0x80 + (((x) + 0x80) >> 8)) >> 8)
+
 static inline RenColor blend_pixel(RenColor dst, RenColor src) {
   int ia = 0xff - src.a;
-  dst.r = ((src.r * src.a) + (dst.r * ia)) >> 8;
-  dst.g = ((src.g * src.a) + (dst.g * ia)) >> 8;
-  dst.b = ((src.b * src.a) + (dst.b * ia)) >> 8;
+  dst.r = DIV255((src.r * src.a) + (dst.r * ia));
+  dst.g = DIV255((src.g * src.a) + (dst.g * ia));
+  dst.b = DIV255((src.b * src.a) + (dst.b * ia));
   return dst;
 }
 
 
 static inline RenColor blend_pixel2(RenColor dst, RenColor src, RenColor color) {
-  src.a = (src.a * color.a) >> 8;
+  src.a = DIV255(src.a * color.a);
   int ia = 0xff - src.a;
-  dst.r = ((src.r * color.r * src.a) >> 16) + ((dst.r * ia) >> 8);
-  dst.g = ((src.g * color.g * src.a) >> 16) + ((dst.g * ia) >> 8);
-  dst.b = ((src.b * color.b * src.a) >> 16) + ((dst.b * ia) >> 8);
+  dst.r = DIV255(DIV255(src.r * color.r) * src.a + dst.r * ia);
+  dst.g = DIV255(DIV255(src.g * color.g) * src.a + dst.g * ia);
+  dst.b = DIV255(DIV255(src.b * color.b) * src.a + dst.b * ia);
   return dst;
 }
 

@@ -197,9 +197,15 @@ function core.load_plugins()
 end
 
 
-function core.load_project_module()
+function core.load_project_module(force)
   local filename = ".lite_project.lua"
   if system.get_file_info(filename) then
+
+    if not force and not config.auto_load_project_module then
+      core.log("untrusted project module found; run core:load-project-module or enable config.auto_load_project_module")
+      return true
+    end
+
     return core.try(function()
       local fn, err = loadfile(filename)
       if not fn then error("Error when loading project module:\n\t" .. err) end

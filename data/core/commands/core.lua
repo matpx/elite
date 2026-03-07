@@ -108,4 +108,8 @@ command.add(nil, {
       doc:save(filename)
     end
   end,
+
+  ["core:load-project-module"] = function()
+    core.load_project_module(true)
+  end,
 })

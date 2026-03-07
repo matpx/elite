@@ -1,5 +1,6 @@
 local config = {}
 
+config.auto_load_project_module = false
 config.project_scan_rate = 2
 config.fps = 60
 config.idle_timeout = 15

@@ -84,8 +84,6 @@ function core.init()
   Doc = require "core.doc"
   ImageView = require "core.imageview"
 
-  assert(config.min_fps <= config.max_fps, "max_fps must be greater than or equal to min_fps")
-
   local project_dir = EXEDIR
   local files = {}
   for i = 2, #ARGS do
@@ -100,8 +98,7 @@ function core.init()
   system.chdir(project_dir)
   system.watch_dir(".")
 
-  core.frame_start = system.get_time()
-  core.delta_time = 0
+  core.frame_start = 0
   core.clip_rect_stack = {{ 0,0,0,0 }}
   core.log_items = {}
   core.docs = {}
@@ -443,7 +440,7 @@ end
 
 local run_threads = coroutine.wrap(function()
   while true do
-    local max_time = 1 / config.max_fps - 0.004
+    local max_time = 1 / config.fps - 0.004
     local ran_any_threads = false
 
     for k, thread in pairs(core.threads) do
@@ -475,24 +472,14 @@ end)
 
 function core.run()
   while true do
-    local frame_time = system.get_time()
-    core.delta_time = frame_time - core.frame_start
-    core.frame_start = frame_time
-
+    core.frame_start = system.get_time()
     local did_redraw = core.step()
     run_threads()
-
-    if not did_redraw then
-      if system.window_has_focus() then
-        local elapsed = system.get_time() - core.frame_start
-        system.wait_event(math.max(0.5 / config.min_fps, 1 / config.min_fps - elapsed))
-      else
-        system.wait_event(1.0)
-      end
+    if not did_redraw and not system.window_has_focus() then
+      system.wait_event(0.25)
     end
-
     local elapsed = system.get_time() - core.frame_start
-    system.sleep(math.max(0, 1 / config.max_fps - elapsed))
+    system.sleep(math.max(0, 1 / config.fps - elapsed))
   end
 end
 

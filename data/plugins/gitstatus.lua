@@ -38,6 +38,7 @@ core.add_thread(function()
         git.inserts = tonumber(line:match("(%d+) ins")) or 0
         git.deletes = tonumber(line:match("(%d+) del")) or 0
 
+        core.redraw = true
       else
         git.branch = nil
       end

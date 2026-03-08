@@ -1,6 +1,6 @@
+#include "rencache.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "rencache.h"
 
 /* a cache over the software renderer -- all drawing operations are stored as
 ** commands when issued. At the end of the frame we write the commands to a grid
@@ -24,18 +24,19 @@ typedef struct {
   char text[0];
 } Command;
 
-
 static unsigned cells_buf1[CELLS_X * CELLS_Y];
 static unsigned cells_buf2[CELLS_X * CELLS_Y];
 static unsigned *cells_prev = cells_buf1;
 static unsigned *cells = cells_buf2;
 static RenRect rect_buf[CELLS_X * CELLS_Y / 2];
-static union { Command _align; char buf[COMMAND_BUF_SIZE]; } command_buf_union;
+static union {
+  Command _align;
+  char buf[COMMAND_BUF_SIZE];
+} command_buf_union;
 #define command_buf (command_buf_union.buf)
 static int command_buf_idx;
 static RenRect screen_rect;
 static bool show_debug;
-
 
 static inline int min(int a, int b) { return a < b ? a : b; }
 static inline int max(int a, int b) { return a > b ? a : b; }
@@ -50,39 +51,32 @@ static void hash(unsigned *h, const void *data, int size) {
   }
 }
 
-
-static inline int cell_idx(int x, int y) {
-  return x + y * CELLS_X;
-}
-
+static inline int cell_idx(int x, int y) { return x + y * CELLS_X; }
 
 static inline bool rects_overlap(RenRect a, RenRect b) {
-  return b.x + b.width  >= a.x && b.x <= a.x + a.width
-      && b.y + b.height >= a.y && b.y <= a.y + a.height;
+  return b.x + b.width >= a.x && b.x <= a.x + a.width &&
+         b.y + b.height >= a.y && b.y <= a.y + a.height;
 }
-
 
 static RenRect intersect_rects(RenRect a, RenRect b) {
   int x1 = max(a.x, b.x);
   int y1 = max(a.y, b.y);
   int x2 = min(a.x + a.width, b.x + b.width);
   int y2 = min(a.y + a.height, b.y + b.height);
-  return (RenRect) { x1, y1, max(0, x2 - x1), max(0, y2 - y1) };
+  return (RenRect){x1, y1, max(0, x2 - x1), max(0, y2 - y1)};
 }
-
 
 static RenRect merge_rects(RenRect a, RenRect b) {
   int x1 = min(a.x, b.x);
   int y1 = min(a.y, b.y);
   int x2 = max(a.x + a.width, b.x + b.width);
   int y2 = max(a.y + a.height, b.y + b.height);
-  return (RenRect) { x1, y1, x2 - x1, y2 - y1 };
+  return (RenRect){x1, y1, x2 - x1, y2 - y1};
 }
 
-
-static Command* push_command(int type, int size) {
-  size = (size + sizeof(void*) - 1) & ~(sizeof(void*) - 1);
-  Command *cmd = (Command*) (command_buf + command_buf_idx);
+static Command *push_command(int type, int size) {
+  size = (size + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
+  Command *cmd = (Command *)(command_buf + command_buf_idx);
   int n = command_buf_idx + size;
   if (n > COMMAND_BUF_SIZE) {
     fprintf(stderr, "Warning: (" __FILE__ "): exhausted command buffer\n");
@@ -95,36 +89,35 @@ static Command* push_command(int type, int size) {
   return cmd;
 }
 
-
 static bool next_command(Command **prev) {
   if (*prev == NULL) {
-    *prev = (Command*) command_buf;
+    *prev = (Command *)command_buf;
   } else {
-    *prev = (Command*) (((char*) *prev) + (*prev)->size);
+    *prev = (Command *)(((char *)*prev) + (*prev)->size);
   }
-  return *prev != ((Command*) (command_buf + command_buf_idx));
+  return *prev != ((Command *)(command_buf + command_buf_idx));
 }
 
-
-void rencache_show_debug(bool enable) {
-  show_debug = enable;
-}
-
+void rencache_show_debug(bool enable) { show_debug = enable; }
 
 void rencache_free_font(RenFont *font) {
   Command *cmd = push_command(FREE_FONT, sizeof(Command));
-  if (cmd) { cmd->font = font; }
+  if (cmd) {
+    cmd->font = font;
+  }
 }
-
 
 void rencache_set_clip_rect(RenRect rect) {
   Command *cmd = push_command(SET_CLIP, sizeof(Command));
-  if (cmd) { cmd->rect = intersect_rects(rect, screen_rect); }
+  if (cmd) {
+    cmd->rect = intersect_rects(rect, screen_rect);
+  }
 }
 
-
 void rencache_draw_rect(RenRect rect, RenColor color) {
-  if (!rects_overlap(screen_rect, rect)) { return; }
+  if (!rects_overlap(screen_rect, rect)) {
+    return;
+  }
   Command *cmd = push_command(DRAW_RECT, sizeof(Command));
   if (cmd) {
     cmd->rect = rect;
@@ -132,10 +125,12 @@ void rencache_draw_rect(RenRect rect, RenColor color) {
   }
 }
 
-
 void rencache_draw_image(RenImage *image, int x, int y, RenColor color) {
-  RenRect rect = { x, y, ren_get_image_width(image), ren_get_image_height(image) };
-  if (!rects_overlap(screen_rect, rect)) { return; }
+  RenRect rect = {x, y, ren_get_image_width(image),
+                  ren_get_image_height(image)};
+  if (!rects_overlap(screen_rect, rect)) {
+    return;
+  }
   Command *cmd = push_command(DRAW_IMAGE, sizeof(Command));
   if (cmd) {
     cmd->rect = rect;
@@ -144,8 +139,8 @@ void rencache_draw_image(RenImage *image, int x, int y, RenColor color) {
   }
 }
 
-
-int rencache_draw_text(RenFont *font, const char *text, int x, int y, RenColor color) {
+int rencache_draw_text(RenFont *font, const char *text, int x, int y,
+                       RenColor color) {
   RenRect rect;
   rect.x = x;
   rect.y = y;
@@ -167,11 +162,7 @@ int rencache_draw_text(RenFont *font, const char *text, int x, int y, RenColor c
   return x + rect.width;
 }
 
-
-void rencache_invalidate(void) {
-  memset(cells_prev, 0xff, sizeof(cells_buf1));
-}
-
+void rencache_invalidate(void) { memset(cells_prev, 0xff, sizeof(cells_buf1)); }
 
 void rencache_begin_frame(void) {
   /* reset all cells if the screen width/height has changed */
@@ -184,14 +175,17 @@ void rencache_begin_frame(void) {
   }
 }
 
-
 static void update_overlapping_cells(RenRect r, unsigned h) {
   int x1 = r.x / CELL_SIZE;
   int y1 = r.y / CELL_SIZE;
   int x2 = (r.x + r.width) / CELL_SIZE;
   int y2 = (r.y + r.height) / CELL_SIZE;
-  if (x2 >= CELLS_X) { x2 = CELLS_X - 1; }
-  if (y2 >= CELLS_Y) { y2 = CELLS_Y - 1; }
+  if (x2 >= CELLS_X) {
+    x2 = CELLS_X - 1;
+  }
+  if (y2 >= CELLS_Y) {
+    y2 = CELLS_Y - 1;
+  }
 
   for (int y = y1; y <= y2; y++) {
     for (int x = x1; x <= x2; x++) {
@@ -200,7 +194,6 @@ static void update_overlapping_cells(RenRect r, unsigned h) {
     }
   }
 }
-
 
 static void push_rect(RenRect r, int *count) {
   /* try to merge with existing rectangle */
@@ -215,15 +208,18 @@ static void push_rect(RenRect r, int *count) {
   rect_buf[(*count)++] = r;
 }
 
-
 void rencache_end_frame(void) {
   /* update cells from commands */
   Command *cmd = NULL;
   RenRect cr = screen_rect;
   while (next_command(&cmd)) {
-    if (cmd->type == SET_CLIP) { cr = cmd->rect; }
+    if (cmd->type == SET_CLIP) {
+      cr = cmd->rect;
+    }
     RenRect r = intersect_rects(cmd->rect, cr);
-    if (r.width == 0 || r.height == 0) { continue; }
+    if (r.width == 0 || r.height == 0) {
+      continue;
+    }
     unsigned h = HASH_INITIAL;
     hash(&h, cmd, cmd->size);
     update_overlapping_cells(r, h);
@@ -238,7 +234,7 @@ void rencache_end_frame(void) {
       /* compare previous and current cell for change */
       int idx = cell_idx(x, y);
       if (cells[idx] != cells_prev[idx]) {
-        push_rect((RenRect) { x, y, 1, 1 }, &rect_count);
+        push_rect((RenRect){x, y, 1, 1}, &rect_count);
       }
       cells_prev[idx] = HASH_INITIAL;
     }
@@ -264,29 +260,30 @@ void rencache_end_frame(void) {
     cmd = NULL;
     while (next_command(&cmd)) {
       switch (cmd->type) {
-        case FREE_FONT:
-          has_free_commands = true;
-          break;
-        case SET_CLIP:
-          ren_set_clip_rect(intersect_rects(cmd->rect, r));
-          break;
-        case DRAW_RECT:
-          ren_draw_rect(cmd->rect, cmd->color);
-          break;
-        case DRAW_IMAGE: {
-          RenRect sub = { 0, 0, cmd->rect.width, cmd->rect.height };
-          ren_draw_image(cmd->image, &sub, cmd->rect.x, cmd->rect.y, cmd->color);
-          break;
-        }
-        case DRAW_TEXT:
-          ren_set_font_tab_width(cmd->font, cmd->tab_width);
-          ren_draw_text(cmd->font, cmd->text, cmd->rect.x, cmd->rect.y, cmd->color);
-          break;
+      case FREE_FONT:
+        has_free_commands = true;
+        break;
+      case SET_CLIP:
+        ren_set_clip_rect(intersect_rects(cmd->rect, r));
+        break;
+      case DRAW_RECT:
+        ren_draw_rect(cmd->rect, cmd->color);
+        break;
+      case DRAW_IMAGE: {
+        RenRect sub = {0, 0, cmd->rect.width, cmd->rect.height};
+        ren_draw_image(cmd->image, &sub, cmd->rect.x, cmd->rect.y, cmd->color);
+        break;
+      }
+      case DRAW_TEXT:
+        ren_set_font_tab_width(cmd->font, cmd->tab_width);
+        ren_draw_text(cmd->font, cmd->text, cmd->rect.x, cmd->rect.y,
+                      cmd->color);
+        break;
       }
     }
 
     if (show_debug) {
-      RenColor color = { rand(), rand(), rand(), 50 };
+      RenColor color = {rand(), rand(), rand(), 50};
       ren_draw_rect(r, color);
     }
   }

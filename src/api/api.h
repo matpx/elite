@@ -1,8 +1,8 @@
 #ifndef API_H
 #define API_H
 
-#include "lib/lua55/lua.h"
 #include "lib/lua55/lauxlib.h"
+#include "lib/lua55/lua.h"
 #include "lib/lua55/lualib.h"
 
 #define API_TYPE_FONT "Font"

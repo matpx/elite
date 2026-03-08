@@ -1,13 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include "renderer.h"
+#include "lib/qoi/qoi.h"
+#include "lib/stb/stb_image.h"
+#include "lib/stb/stb_image_resize2.h"
+#include "lib/stb/stb_truetype.h"
 #include <assert.h>
 #include <math.h>
-#include "lib/stb/stb_truetype.h"
-#include "lib/stb/stb_image.h"
-#include "lib/qoi/qoi.h"
-#include "lib/stb/stb_image_resize2.h"
-#include "renderer.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define MAX_GLYPHSET 256
 
@@ -29,12 +29,12 @@ struct RenFont {
   int height;
 };
 
-
 static SDL_Window *window;
-static struct { int left, top, right, bottom; } clip;
+static struct {
+  int left, top, right, bottom;
+} clip;
 
-
-static void* check_alloc(void *ptr) {
+static void *check_alloc(void *ptr) {
   if (!ptr) {
     fprintf(stderr, "Fatal error: memory allocation failed\n");
     exit(EXIT_FAILURE);
@@ -42,16 +42,27 @@ static void* check_alloc(void *ptr) {
   return ptr;
 }
 
-
-static const char* utf8_to_codepoint(const char *p, unsigned *dst) {
+static const char *utf8_to_codepoint(const char *p, unsigned *dst) {
   unsigned char c = *p;
   unsigned res, n;
   switch (c & 0xf0) {
-    case 0xf0 :  res = c & 0x07;  n = 3;  break;
-    case 0xe0 :  res = c & 0x0f;  n = 2;  break;
-    case 0xd0 :
-    case 0xc0 :  res = c & 0x1f;  n = 1;  break;
-    default   :  res = c;         n = 0;  break;
+  case 0xf0:
+    res = c & 0x07;
+    n = 3;
+    break;
+  case 0xe0:
+    res = c & 0x0f;
+    n = 2;
+    break;
+  case 0xd0:
+  case 0xc0:
+    res = c & 0x1f;
+    n = 1;
+    break;
+  default:
+    res = c;
+    n = 0;
+    break;
   }
   while (n--) {
     if ((*(p + 1) & 0xc0) != 0x80) {
@@ -65,17 +76,15 @@ static const char* utf8_to_codepoint(const char *p, unsigned *dst) {
   return p + 1;
 }
 
-
 void ren_init(SDL_Window *win) {
   assert(win);
   window = win;
   SDL_Surface *surf = SDL_GetWindowSurface(window);
-  ren_set_clip_rect( (RenRect) { 0, 0, surf->w, surf->h } );
+  ren_set_clip_rect((RenRect){0, 0, surf->w, surf->h});
 }
 
-
 void ren_update_rects(RenRect *rects, int count) {
-  SDL_UpdateWindowSurfaceRects(window, (SDL_Rect*) rects, count);
+  SDL_UpdateWindowSurfaceRects(window, (SDL_Rect *)rects, count);
   static bool initial_frame = true;
   if (initial_frame) {
     SDL_ShowWindow(window);
@@ -83,14 +92,12 @@ void ren_update_rects(RenRect *rects, int count) {
   }
 }
 
-
 void ren_set_clip_rect(RenRect rect) {
-  clip.left   = rect.x;
-  clip.top    = rect.y;
-  clip.right  = rect.x + rect.width;
+  clip.left = rect.x;
+  clip.top = rect.y;
+  clip.right = rect.x + rect.width;
   clip.bottom = rect.y + rect.height;
 }
-
 
 void ren_get_size(int *x, int *y) {
   SDL_Surface *surf = SDL_GetWindowSurface(window);
@@ -98,19 +105,18 @@ void ren_get_size(int *x, int *y) {
   *y = surf->h;
 }
 
-
-RenImage* ren_new_image(int width, int height) {
+RenImage *ren_new_image(int width, int height) {
   assert(width > 0 && height > 0);
-  RenImage *image = malloc(sizeof(RenImage) + (size_t) width * height * sizeof(RenColor));
+  RenImage *image =
+      malloc(sizeof(RenImage) + (size_t)width * height * sizeof(RenColor));
   check_alloc(image);
-  image->pixels = (void*) (image + 1);
+  image->pixels = (void *)(image + 1);
   image->width = width;
   image->height = height;
   return image;
 }
 
-
-RenImage* ren_load_image(const char *filename) {
+RenImage *ren_load_image(const char *filename) {
   int w, h, n;
   unsigned char *data = NULL;
 
@@ -121,7 +127,9 @@ RenImage* ren_load_image(const char *filename) {
     /* QOI */
     qoi_desc desc;
     data = qoi_read(filename, &desc, 4);
-    if (!data) { return NULL; }
+    if (!data) {
+      return NULL;
+    }
 
     w = desc.width;
     h = desc.height;
@@ -129,60 +137,58 @@ RenImage* ren_load_image(const char *filename) {
   } else {
     /* stb_image */
     data = stbi_load(filename, &w, &h, &n, 4);
-    if (!data) { return NULL; }
+    if (!data) {
+      return NULL;
+    }
   }
 
   RenImage *image = ren_new_image(w, h);
-  if (!image) { free(data); return NULL; }
+  if (!image) {
+    free(data);
+    return NULL;
+  }
 
   /* convert RGBA -> BGRA */
   RenColor *dst = image->pixels;
   unsigned char *src = data;
 
   for (int i = 0; i < w * h; i++) {
-    dst[i] = (RenColor){ .r = src[0], .g = src[1], .b = src[2], .a = src[3] };
+    dst[i] = (RenColor){.r = src[0], .g = src[1], .b = src[2], .a = src[3]};
     src += 4;
   }
 
   if (is_qoi) {
     free(data);
-  }
-  else {
+  } else {
     stbi_image_free(data);
   }
 
   return image;
 }
 
-
-RenImage* ren_resize_image(RenImage *image, int new_w, int new_h) {
+RenImage *ren_resize_image(RenImage *image, int new_w, int new_h) {
   RenImage *resized = ren_new_image(new_w, new_h);
-  if (!resized) { return NULL; }
+  if (!resized) {
+    return NULL;
+  }
   unsigned char *result = stbir_resize_uint8_linear(
-    (unsigned char *)image->pixels, image->width, image->height, image->width * 4,
-    (unsigned char *)resized->pixels, new_w, new_h, new_w * 4,
-    STBIR_BGRA);
-  if (!result) { ren_free_image(resized); return NULL; }
+      (unsigned char *)image->pixels, image->width, image->height,
+      image->width * 4, (unsigned char *)resized->pixels, new_w, new_h,
+      new_w * 4, STBIR_BGRA);
+  if (!result) {
+    ren_free_image(resized);
+    return NULL;
+  }
   return resized;
 }
 
+void ren_free_image(RenImage *image) { free(image); }
 
-void ren_free_image(RenImage *image) {
-  free(image);
-}
+int ren_get_image_width(RenImage *image) { return image->width; }
 
+int ren_get_image_height(RenImage *image) { return image->height; }
 
-int ren_get_image_width(RenImage *image) {
-  return image->width;
-}
-
-
-int ren_get_image_height(RenImage *image) {
-  return image->height;
-}
-
-
-static GlyphSet* load_glyphset(RenFont *font, int idx) {
+static GlyphSet *load_glyphset(RenFont *font, int idx) {
   GlyphSet *set = check_alloc(calloc(1, sizeof(GlyphSet)));
 
   /* init image */
@@ -192,12 +198,11 @@ retry:
   set->image = ren_new_image(width, height);
 
   /* load glyphs */
-  float s =
-    stbtt_ScaleForMappingEmToPixels(&font->stbfont, 1) /
-    stbtt_ScaleForPixelHeight(&font->stbfont, 1);
-  int res = stbtt_BakeFontBitmap(
-    font->data, 0, font->size * s, (void*) set->image->pixels,
-    width, height, idx * 256, 256, set->glyphs);
+  float s = stbtt_ScaleForMappingEmToPixels(&font->stbfont, 1) /
+            stbtt_ScaleForPixelHeight(&font->stbfont, 1);
+  int res = stbtt_BakeFontBitmap(font->data, 0, font->size * s,
+                                 (void *)set->image->pixels, width, height,
+                                 idx * 256, 256, set->glyphs);
 
   /* retry with a larger image buffer if the buffer wasn't large enough */
   if (res < 0) {
@@ -219,15 +224,14 @@ retry:
 
   /* convert 8bit data to 32bit */
   for (int i = width * height - 1; i >= 0; i--) {
-    uint8_t n = *((uint8_t*) set->image->pixels + i);
-    set->image->pixels[i] = (RenColor) { .r = 255, .g = 255, .b = 255, .a = n };
+    uint8_t n = *((uint8_t *)set->image->pixels + i);
+    set->image->pixels[i] = (RenColor){.r = 255, .g = 255, .b = 255, .a = n};
   }
 
   return set;
 }
 
-
-static GlyphSet* get_glyphset(RenFont *font, int codepoint) {
+static GlyphSet *get_glyphset(RenFont *font, int codepoint) {
   int idx = (codepoint >> 8) % MAX_GLYPHSET;
   if (!font->sets[idx]) {
     font->sets[idx] = load_glyphset(font, idx);
@@ -235,8 +239,7 @@ static GlyphSet* get_glyphset(RenFont *font, int codepoint) {
   return font->sets[idx];
 }
 
-
-RenFont* ren_load_font(const char *filename, float size) {
+RenFont *ren_load_font(const char *filename, float size) {
   RenFont *font = NULL;
   FILE *fp = NULL;
 
@@ -246,18 +249,25 @@ RenFont* ren_load_font(const char *filename, float size) {
 
   /* load font into buffer */
   fp = fopen(filename, "rb");
-  if (!fp) { return NULL; }
+  if (!fp) {
+    return NULL;
+  }
   /* get size */
-  fseek(fp, 0, SEEK_END); int buf_size = ftell(fp); fseek(fp, 0, SEEK_SET);
+  fseek(fp, 0, SEEK_END);
+  int buf_size = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
   /* load */
   font->data = check_alloc(malloc(buf_size));
-  int _ = fread(font->data, 1, buf_size, fp); (void) _;
+  int _ = fread(font->data, 1, buf_size, fp);
+  (void)_;
   fclose(fp);
   fp = NULL;
 
   /* init stbfont */
   int ok = stbtt_InitFont(&font->stbfont, font->data, 0);
-  if (!ok) { goto fail; }
+  if (!ok) {
+    goto fail;
+  }
 
   /* get height and scale */
   int ascent, descent, linegap;
@@ -273,12 +283,15 @@ RenFont* ren_load_font(const char *filename, float size) {
   return font;
 
 fail:
-  if (fp) { fclose(fp); }
-  if (font) { free(font->data); }
+  if (fp) {
+    fclose(fp);
+  }
+  if (font) {
+    free(font->data);
+  }
   free(font);
   return NULL;
 }
-
 
 void ren_free_font(RenFont *font) {
   for (int i = 0; i < MAX_GLYPHSET; i++) {
@@ -292,18 +305,15 @@ void ren_free_font(RenFont *font) {
   free(font);
 }
 
-
 void ren_set_font_tab_width(RenFont *font, int n) {
   GlyphSet *set = get_glyphset(font, '\t');
   set->glyphs['\t'].xadvance = n;
 }
 
-
 int ren_get_font_tab_width(RenFont *font) {
   GlyphSet *set = get_glyphset(font, '\t');
   return set->glyphs['\t'].xadvance;
 }
-
 
 int ren_get_font_width(RenFont *font, const char *text) {
   int x = 0;
@@ -318,11 +328,7 @@ int ren_get_font_width(RenFont *font, const char *text) {
   return x;
 }
 
-
-int ren_get_font_height(RenFont *font) {
-  return font->height;
-}
-
+int ren_get_font_height(RenFont *font) { return font->height; }
 
 #define DIV255(x) (((x) + 0x80 + (((x) + 0x80) >> 8)) >> 8)
 
@@ -334,8 +340,8 @@ static inline RenColor blend_pixel(RenColor dst, RenColor src) {
   return dst;
 }
 
-
-static inline RenColor blend_pixel2(RenColor dst, RenColor src, RenColor color) {
+static inline RenColor blend_pixel2(RenColor dst, RenColor src,
+                                    RenColor color) {
   src.a = DIV255(src.a * color.a);
   int ia = 0xff - src.a;
   dst.r = DIV255(DIV255(src.r * color.r) * src.a + dst.r * ia);
@@ -344,28 +350,29 @@ static inline RenColor blend_pixel2(RenColor dst, RenColor src, RenColor color) 
   return dst;
 }
 
-
-#define rect_draw_loop(expr)        \
-  for (int j = y1; j < y2; j++) {   \
-    for (int i = x1; i < x2; i++) { \
-      *d = expr;                    \
-      d++;                          \
-    }                               \
-    d += dr;                        \
+#define rect_draw_loop(expr)                                                   \
+  for (int j = y1; j < y2; j++) {                                              \
+    for (int i = x1; i < x2; i++) {                                            \
+      *d = expr;                                                               \
+      d++;                                                                     \
+    }                                                                          \
+    d += dr;                                                                   \
   }
 
 void ren_draw_rect(RenRect rect, RenColor color) {
-  if (color.a == 0) { return; }
+  if (color.a == 0) {
+    return;
+  }
 
   int x1 = rect.x < clip.left ? clip.left : rect.x;
-  int y1 = rect.y < clip.top  ? clip.top  : rect.y;
+  int y1 = rect.y < clip.top ? clip.top : rect.y;
   int x2 = rect.x + rect.width;
   int y2 = rect.y + rect.height;
-  x2 = x2 > clip.right  ? clip.right  : x2;
+  x2 = x2 > clip.right ? clip.right : x2;
   y2 = y2 > clip.bottom ? clip.bottom : y2;
 
   SDL_Surface *surf = SDL_GetWindowSurface(window);
-  RenColor *d = (RenColor*) surf->pixels;
+  RenColor *d = (RenColor *)surf->pixels;
   d += x1 + y1 * surf->w;
   int dr = surf->w - (x2 - x1);
 
@@ -376,16 +383,30 @@ void ren_draw_rect(RenRect rect, RenColor color) {
   }
 }
 
-
-void ren_draw_image(RenImage *image, RenRect *sub, int x, int y, RenColor color) {
-  if (color.a == 0) { return; }
+void ren_draw_image(RenImage *image, RenRect *sub, int x, int y,
+                    RenColor color) {
+  if (color.a == 0) {
+    return;
+  }
 
   /* clip */
   int n;
-  if ((n = clip.left - x) > 0) { sub->width  -= n; sub->x += n; x += n; }
-  if ((n = clip.top  - y) > 0) { sub->height -= n; sub->y += n; y += n; }
-  if ((n = x + sub->width  - clip.right ) > 0) { sub->width  -= n; }
-  if ((n = y + sub->height - clip.bottom) > 0) { sub->height -= n; }
+  if ((n = clip.left - x) > 0) {
+    sub->width -= n;
+    sub->x += n;
+    x += n;
+  }
+  if ((n = clip.top - y) > 0) {
+    sub->height -= n;
+    sub->y += n;
+    y += n;
+  }
+  if ((n = x + sub->width - clip.right) > 0) {
+    sub->width -= n;
+  }
+  if ((n = y + sub->height - clip.bottom) > 0) {
+    sub->height -= n;
+  }
 
   if (sub->width <= 0 || sub->height <= 0) {
     return;
@@ -394,7 +415,7 @@ void ren_draw_image(RenImage *image, RenRect *sub, int x, int y, RenColor color)
   /* draw */
   SDL_Surface *surf = SDL_GetWindowSurface(window);
   RenColor *s = image->pixels;
-  RenColor *d = (RenColor*) surf->pixels;
+  RenColor *d = (RenColor *)surf->pixels;
   s += sub->x + sub->y * image->width;
   d += x + y * surf->w;
   int sr = image->width - sub->width;
@@ -411,8 +432,8 @@ void ren_draw_image(RenImage *image, RenRect *sub, int x, int y, RenColor color)
   }
 }
 
-
-int ren_draw_text(RenFont *font, const char *text, int x, int y, RenColor color) {
+int ren_draw_text(RenFont *font, const char *text, int x, int y,
+                  RenColor color) {
   RenRect rect;
   const char *p = text;
   unsigned codepoint;

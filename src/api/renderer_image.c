@@ -1,17 +1,17 @@
 #include "api.h"
-#include "renderer.h"
 #include "rencache.h"
-
+#include "renderer.h"
 
 static int f_load(lua_State *L) {
   const char *filename = luaL_checkstring(L, 1);
   RenImage **self = lua_newuserdata(L, sizeof(*self));
   luaL_setmetatable(L, API_TYPE_IMAGE);
   *self = ren_load_image(filename);
-  if (!*self) { luaL_error(L, "failed to load image: %s", filename); }
+  if (!*self) {
+    luaL_error(L, "failed to load image: %s", filename);
+  }
   return 1;
 }
-
 
 static int f_get_width(lua_State *L) {
   RenImage **self = luaL_checkudata(L, 1, API_TYPE_IMAGE);
@@ -19,42 +19,43 @@ static int f_get_width(lua_State *L) {
   return 1;
 }
 
-
 static int f_get_height(lua_State *L) {
   RenImage **self = luaL_checkudata(L, 1, API_TYPE_IMAGE);
   lua_pushnumber(L, ren_get_image_height(*self));
   return 1;
 }
 
-
 static int f_resize(lua_State *L) {
   RenImage **self = luaL_checkudata(L, 1, API_TYPE_IMAGE);
   int w = luaL_checknumber(L, 2);
   int h = luaL_checknumber(L, 3);
-  if (w < 1 || h < 1) { luaL_error(L, "invalid image dimensions"); }
+  if (w < 1 || h < 1) {
+    luaL_error(L, "invalid image dimensions");
+  }
   RenImage **out = lua_newuserdata(L, sizeof(*out));
   luaL_setmetatable(L, API_TYPE_IMAGE);
   *out = ren_resize_image(*self, w, h);
-  if (!*out) { luaL_error(L, "failed to resize image"); }
+  if (!*out) {
+    luaL_error(L, "failed to resize image");
+  }
   return 1;
 }
 
-
 static int f_gc(lua_State *L) {
   RenImage **self = luaL_checkudata(L, 1, API_TYPE_IMAGE);
-  if (*self) { ren_free_image(*self); *self = NULL; }
+  if (*self) {
+    ren_free_image(*self);
+    *self = NULL;
+  }
   return 0;
 }
 
-
-static const luaL_Reg lib[] = {
-  { "__gc",       f_gc         },
-  { "load",       f_load       },
-  { "get_width",  f_get_width  },
-  { "get_height", f_get_height },
-  { "resize",     f_resize     },
-  { NULL, NULL }
-};
+static const luaL_Reg lib[] = {{"__gc", f_gc},
+                               {"load", f_load},
+                               {"get_width", f_get_width},
+                               {"get_height", f_get_height},
+                               {"resize", f_resize},
+                               {NULL, NULL}};
 
 int luaopen_renderer_image(lua_State *L) {
   luaL_newmetatable(L, API_TYPE_IMAGE);

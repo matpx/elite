@@ -5,7 +5,7 @@ local command = require("core.command")
 local config = require("core.config")
 local View = require("core.view")
 
-config.matrix_speed = 1.0 -- multiplier for fall speed
+config.matrix_speed = 0.4 -- multiplier for fall speed
 config.matrix_density = 0.7 -- 0..1, column spawn probability
 config.matrix_fade_steps = 16 -- number of brightness levels in a trail
 
@@ -16,7 +16,6 @@ local MatrixView = View:extend()
 function MatrixView:new()
 	MatrixView.super.new(self)
 	self.columns = {}
-	self.last_time = os.clock()
 	self.num_cols = 0
 	self.num_rows = 0
 end
@@ -30,23 +29,13 @@ local function random_char()
 	return chars:sub(i, i)
 end
 
-local function make_stream(num_rows, pos)
-	local length = math.random(4, math.max(4, num_rows))
-	local stream = {
-		pos = pos or 0,
+local function make_stream(num_rows)
+	return {
+		pos = 0,
 		speed = 0.5 + math.random() * 1.0,
-		length = length,
+		length = math.random(4, math.max(4, num_rows)),
 		chars = {},
 	}
-	if pos then
-		local head = math.floor(pos)
-		for r = math.max(1, head - length + 1), math.max(1, head) do
-			if r <= num_rows then
-				stream.chars[r] = random_char()
-			end
-		end
-	end
-	return stream
 end
 
 function MatrixView:update_grid()
@@ -62,10 +51,12 @@ function MatrixView:update_grid()
 	for i = cols + 1, #self.columns do
 		self.columns[i] = nil
 	end
-	-- seed all columns spread across the screen
+	-- stagger initial streams off-screen so they don't arrive together
 	for i = 1, cols do
-		if math.random() < config.matrix_density then
-			self.columns[i] = make_stream(rows, math.random() * (rows + 10))
+		if not self.columns[i] and math.random() < config.matrix_density then
+			local s = make_stream(rows)
+			s.pos = -math.random() * (rows + 10)
+			self.columns[i] = s
 		end
 	end
 end
@@ -73,10 +64,7 @@ end
 function MatrixView:update()
 	self:update_grid()
 
-	local now = os.clock()
-	local dt = now - self.last_time
-	self.last_time = now
-	local steps = dt * 15 * config.matrix_speed
+	local step = 15 / config.fps * config.matrix_speed
 
 	for i = 1, self.num_cols do
 		local col = self.columns[i]
@@ -85,7 +73,7 @@ function MatrixView:update()
 				self.columns[i] = make_stream(self.num_rows)
 			end
 		else
-			col.pos = col.pos + steps * col.speed
+			col.pos = col.pos + step * col.speed
 			local head = math.floor(col.pos)
 			-- fill in characters as the head advances
 			for r = math.max(1, head - 2), math.min(self.num_rows, head) do

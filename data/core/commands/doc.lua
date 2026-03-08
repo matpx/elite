@@ -63,14 +63,11 @@ local commands = {
 	end,
 
 	["doc:cut"] = function()
-		if not doc():has_selection() then
-			local line = doc():get_selection()
-			append_line_if_last_line(line)
-			doc():set_selection(line, 1, line + 1, 1)
+		if doc():has_selection() then
+			local text = doc():get_text(doc():get_selection())
+			system.set_clipboard(text)
+			doc():delete_to(0)
 		end
-		local text = doc():get_text(doc():get_selection())
-		system.set_clipboard(text)
-		doc():delete_to(0)
 	end,
 
 	["doc:copy"] = function()

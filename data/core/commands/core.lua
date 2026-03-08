@@ -40,15 +40,26 @@ command.add(nil, {
 		for _, name in ipairs(commands) do
 			valid[name] = true
 		end
+		local history = core.command_history or {}
 		core.command_view:enter("Do Command", function(_text, item)
 			if item then
 				command.perform(item.command)
+				-- update history: remove old entry and push to front
+				local name = item.command
+				for i, v in ipairs(history) do
+					if v == name then
+						table.remove(history, i)
+						break
+					end
+				end
+				table.insert(history, 1, name)
+				core.command_history = history
 			end
 		end, function(text)
 			local res
 			if text == "" then
 				res = {}
-				for _, name in ipairs(command.history) do
+				for _, name in ipairs(history) do
 					if valid[name] then
 						table.insert(res, name)
 					end

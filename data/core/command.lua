@@ -2,7 +2,6 @@ local core = require("core")
 local command = {}
 
 command.map = {}
-command.history = {}
 
 local always_true = function()
 	return true
@@ -47,14 +46,6 @@ local function perform(name)
 	local cmd = command.map[name]
 	if cmd and cmd.predicate() then
 		cmd.perform()
-		-- update history: remove old entry and push to front
-		for i, v in ipairs(command.history) do
-			if v == name then
-				table.remove(command.history, i)
-				break
-			end
-		end
-		table.insert(command.history, 1, name)
 		return true
 	end
 	return false

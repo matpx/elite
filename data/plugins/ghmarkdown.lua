@@ -1,7 +1,6 @@
-local core = require "core"
-local command = require "core.command"
-local keymap = require "core.keymap"
-
+local core = require("core")
+local command = require("core.command")
+local keymap = require("core.keymap")
 
 local html = [[
 <html>
@@ -38,36 +37,34 @@ local html = [[
 </html>
 ]]
 
-
 command.add("core.docview", {
-  ["ghmarkdown:show-preview"] = function()
-    local dv = core.active_view
+	["ghmarkdown:show-preview"] = function()
+		local dv = core.active_view
 
-    local content = dv.doc:get_text(1, 1, math.huge, math.huge)
-    local esc = { ['"'] = '\\"', ["\n"] = '\\n' }
-    local text = html:gsub("${(.-)}", {
-      title = dv:get_name(),
-      content = content:gsub(".", esc)
-    })
+		local content = dv.doc:get_text(1, 1, math.huge, math.huge)
+		local esc = { ['"'] = '\\"', ["\n"] = "\\n" }
+		local text = html:gsub("${(.-)}", {
+			title = dv:get_name(),
+			content = content:gsub(".", esc),
+		})
 
-    local htmlfile = core.temp_filename(".html")
-    local fp = io.open(htmlfile, "w")
-    fp:write(text)
-    fp:close()
+		local htmlfile = core.temp_filename(".html")
+		local fp = io.open(htmlfile, "w")
+		fp:write(text)
+		fp:close()
 
-    core.log("Opening markdown preview for \"%s\"", dv:get_name())
-    if PLATFORM == "Windows" then
-      system.exec("start " .. htmlfile)
-    else
-      system.exec(string.format("xdg-open %q", htmlfile))
-    end
+		core.log('Opening markdown preview for "%s"', dv:get_name())
+		if PLATFORM == "Windows" then
+			system.exec("start " .. htmlfile)
+		else
+			system.exec(string.format("xdg-open %q", htmlfile))
+		end
 
-    core.add_thread(function()
-      coroutine.yield(5)
-      os.remove(htmlfile)
-    end)
-  end
+		core.add_thread(function()
+			coroutine.yield(5)
+			os.remove(htmlfile)
+		end)
+	end,
 })
 
-
-keymap.add { ["ctrl+shift+m"] = "ghmarkdown:show-preview" }
+keymap.add({ ["ctrl+shift+m"] = "ghmarkdown:show-preview" })

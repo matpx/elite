@@ -1,7 +1,7 @@
 -- put user settings here
 -- this module will be loaded after everything else when the application starts
 
-local keymap = require "core.keymap"
+local keymap = require("core.keymap")
 -- local config = require "core.config"
 -- local style = require "core.style"
 
@@ -9,5 +9,4 @@ local keymap = require "core.keymap"
 -- require "user.colors.summer"
 
 -- key binding:
-keymap.add { ["ctrl+q"] = "core:quit" }
-
+keymap.add({ ["ctrl+q"] = "core:quit" })

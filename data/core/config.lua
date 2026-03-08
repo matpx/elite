@@ -20,5 +20,6 @@ config.line_height = 1.2
 config.indent_size = 2
 config.tab_type = "soft"
 config.line_limit = 80
+config.treeview_expand_on_open = true
 
 return config

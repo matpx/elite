@@ -33,7 +33,7 @@ function TreeView:get_cached(item)
 		t = {}
 		t.filename = item.filename
 		t.abs_filename = system.absolute_path(item.filename)
-		t.name = t.filename:match("[^\\/]+$")
+		t.name = t.filename:match("[^" .. PATHSEP .. "]+$")
 		t.depth = get_depth(t.filename)
 		t.type = item.type
 		self.cache[t.filename] = t
@@ -183,10 +183,43 @@ function TreeView:draw()
 	self.target_width = math.max(max_x + style.padding.x, config.treeview_min_size)
 end
 
+function TreeView:expand_to(filename)
+	local ancestors = {}
+	local count = 0
+	local path = ""
+	for segment in filename:gmatch("[^" .. PATHSEP .. "]+") do
+		path = path == "" and segment or (path .. PATHSEP .. segment)
+		ancestors[path] = true
+		count = count + 1
+	end
+	for _, item in ipairs(core.project_files) do
+		if item.type == "dir" and ancestors[item.filename] then
+			local cached = self:get_cached(item)
+			cached.expanded = true
+			cached.skip = nil
+			count = count - 1
+			if count == 0 then
+				break
+			end
+		end
+	end
+end
+
 -- init
 local view = TreeView()
 local node = core.root_view:get_active_node()
 node:split("left", view, true)
+
+-- hook into core.open_file to expand treeview to opened file
+if config.treeview_expand_on_open then
+	local open_file = core.open_file
+	function core.open_file(filename, ...)
+		if filename then
+			view:expand_to(filename)
+		end
+		return open_file(filename, ...)
+	end
+end
 
 -- register commands and keymap
 command.add(nil, {

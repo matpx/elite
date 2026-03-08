@@ -17,7 +17,7 @@ command.add("core.docview", {
 			core.error("Cannot open location of unsaved doc")
 			return
 		end
-		local folder = doc.filename:match("^(.*)[/\\].*$") or "."
+		local folder = doc.filename:match("^(.*)" .. PATHSEP .. ".*$") or "."
 		core.log('Opening "%s"', folder)
 		if PLATFORM == "Windows" then
 			system.exec(string.format("%s %s", config.filemanager, folder))

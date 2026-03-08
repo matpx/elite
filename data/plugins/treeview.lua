@@ -9,6 +9,7 @@ local syntax = require("core.syntax")
 
 config.treeview_min_size = 200 * SCALE
 config.treeview_expand_on_open = true
+config.treeview_use_devicon = true
 
 local function get_depth(filename)
 	local n = 0
@@ -132,6 +133,10 @@ function TreeView:update()
 end
 
 function TreeView:draw()
+	if config.treeview_use_devicon and not style.devicon_font then
+		style.devicon_font = renderer.font.load(EXEDIR .. "/data/plugins/fonts/devicon.ttf", style.font:get_height())
+	end
+
 	self:draw_background(style.background2)
 
 	local icon_width = style.icon_font:get_width("D")
@@ -165,10 +170,10 @@ function TreeView:draw()
 			common.draw_text(style.icon_font, color, icon2, nil, x, y, 0, h)
 			x = x + icon_width
 		else
-			local icon_char = syntax.get(item.name, "").icon
+			local icon_char = config.treeview_use_devicon and syntax.get(item.name, "").icon
 			x = x + style.padding.x
 			if icon_char then
-				common.draw_text(style.language_font, color, icon_char, nil, x, y, 0, h)
+				common.draw_text(style.devicon_font, color, icon_char, nil, x - 2 * SCALE, y, 0, h)
 			else
 				common.draw_text(style.icon_font, color, "f", nil, x, y, 0, h)
 			end

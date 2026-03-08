@@ -2,10 +2,10 @@
 
 set -e
 
-sh ./lint.sh
-
 CC="x86_64-w64-mingw32-gcc -Werror" ./build.sh windows
 CC="gcc -Werror" ./build.sh
+
+sh ./lint.sh
 
 cp winlib/SDL3-3.4.2/x86_64-w64-mingw32/bin/SDL3.dll SDL3.dll
 

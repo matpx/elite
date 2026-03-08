@@ -37,5 +37,5 @@ command.add("core.docview", {
 })
 
 keymap.add({
-	["ctrl+shift+f"] = "formatter:format",
+	["ctrl+shift+i"] = "formatter:format",
 })

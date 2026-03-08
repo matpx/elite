@@ -47,7 +47,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libx11-dev libxext-dev libxcursor-dev libxi-dev libxfixes-dev libxrandr-dev libxss-dev libxtst-dev libwayland-dev libxkbcommon-dev libegl-dev libdecor-0-dev libpulse-dev libasound2-dev gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64 clang-format luarocks
           sudo luarocks install luacheck
-          cargo install stylua
+          curl -LSs https://github.com/JohnnyMorganz/StyLua/releases/latest/download/stylua-linux-x86_64.zip -o /tmp/stylua.zip && sudo unzip -o /tmp/stylua.zip -d /usr/local/bin
           git clone --depth 1 --branch release-3.4.2 https://github.com/libsdl-org/SDL.git /tmp/SDL3
           cmake -S /tmp/SDL3 -B /tmp/SDL3/build -DCMAKE_BUILD_TYPE=Release
           cmake --build /tmp/SDL3/build -j$(nproc)

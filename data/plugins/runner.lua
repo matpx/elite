@@ -37,12 +37,16 @@ local function run_task(name)
 	if not ok then
 		last_status = false
 		core.error("runner %s error: %s", name, success)
-	elseif success then
-		last_status = true
-		core.log("runner %s succeeded", name)
 	else
-		last_status = false
-		core.error("runner %s failed", name)
+		local dr = name == "build" and rawget(_G, "diagnostics_reload")
+		local has_errors = dr and dr()
+		if success and not has_errors then
+			last_status = true
+			core.log("runner %s succeeded", name)
+		else
+			last_status = false
+			core.error("runner %s failed", name)
+		end
 	end
 end
 

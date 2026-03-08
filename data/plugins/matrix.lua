@@ -64,7 +64,7 @@ end
 function MatrixView:update()
 	self:update_grid()
 
-	local step = 15 / config.fps * config.matrix_speed
+	local step = 15 / math.max(1, config.fps or 60) * config.matrix_speed
 
 	for i = 1, self.num_cols do
 		local col = self.columns[i]
@@ -103,15 +103,37 @@ function MatrixView:update()
 	MatrixView.super.update(self)
 end
 
+function MatrixView:build_palette()
+	local fade_steps = config.matrix_fade_steps
+	local bg = style.background
+	local trail = style.syntax["string"]
+	local palette = { style.accent } -- index 1 = head (age 0)
+	for age = 1, fade_steps do
+		local t = 1 - age / fade_steps
+		palette[age + 1] = {
+			bg[1] + (trail[1] - bg[1]) * t,
+			bg[2] + (trail[2] - bg[2]) * t,
+			bg[3] + (trail[3] - bg[3]) * t,
+			255,
+		}
+	end
+	palette[fade_steps + 2] = { bg[1], bg[2], bg[3], 255 } -- fully faded
+	self.palette = palette
+	self.palette_fade_steps = fade_steps
+end
+
 function MatrixView:draw()
 	self:draw_background(style.background)
+
+	if not self.palette or self.palette_fade_steps ~= config.matrix_fade_steps then
+		self:build_palette()
+	end
 
 	local font = style.code_font
 	local x0, y0 = self.position.x, self.position.y
 	local cw, ch = font:get_width("W"), font:get_height()
-	local fade_steps = config.matrix_fade_steps
-	local bg = style.background
-	local trail = style.syntax["string"]
+	local palette = self.palette
+	local max_age = #palette
 
 	for i = 1, self.num_cols do
 		local col = self.columns[i]
@@ -123,18 +145,7 @@ function MatrixView:draw()
 				if c then
 					local age = head - r
 					local cy = y0 + (r - 1) * ch
-					local color
-					if age == 0 then
-						color = style.accent
-					else
-						local t = math.max(0, 1 - age / fade_steps)
-						color = {
-							bg[1] + (trail[1] - bg[1]) * t,
-							bg[2] + (trail[2] - bg[2]) * t,
-							bg[3] + (trail[3] - bg[3]) * t,
-							255,
-						}
-					end
+					local color = palette[math.min(age + 1, max_age)]
 					renderer.draw_text(font, c, cx, cy, color)
 				end
 			end

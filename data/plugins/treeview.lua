@@ -8,6 +8,7 @@ local View = require("core.view")
 local syntax = require("core.syntax")
 
 config.treeview_min_size = 200 * SCALE
+config.treeview_expand_on_open = true
 
 local function get_depth(filename)
 	local n = 0
@@ -228,12 +229,10 @@ command.add(nil, {
 keymap.add({ ["ctrl+b"] = "treeview:toggle" })
 
 -- hook into core.open_file to expand treeview to opened file
-if config.treeview_expand_on_open then
-	local open_file = core.open_file
-	function core.open_file(filename, ...)
-		if filename then
-			view:expand_to(filename)
-		end
-		return open_file(filename, ...)
+local open_file = core.open_file
+function core.open_file(filename, ...)
+	if config.treeview_expand_on_open and filename then
+		view:expand_to(filename)
 	end
+	return open_file(filename, ...)
 end

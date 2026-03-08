@@ -8,6 +8,7 @@ local View = require("core.view")
 local syntax = require("core.syntax")
 
 config.treeview_min_size = 200 * SCALE
+config.treeview_auto_size = true
 config.treeview_expand_on_open = true
 config.treeview_use_devicon = true
 
@@ -120,8 +121,14 @@ function TreeView:on_mouse_pressed(_button, _x, _y)
 end
 
 function TreeView:update()
-	-- update width based on content (computed in draw)
-	local dest = self.visible and (self.target_width or config.treeview_min_size) or 0
+	local dest = 0
+	if self.visible then
+		if config.treeview_auto_size and self.target_width then
+			dest = math.max(self.target_width, config.treeview_min_size)
+		else
+			dest = config.treeview_min_size
+		end
+	end
 	if self.init_size then
 		self.size.x = dest
 		self.init_size = false
@@ -186,7 +193,7 @@ function TreeView:draw()
 		max_x = math.max(max_x, x)
 	end
 
-	self.target_width = math.max(max_x + style.padding.x, config.treeview_min_size)
+	self.target_width = max_x + style.padding.x
 end
 
 function TreeView:expand_to(filename)

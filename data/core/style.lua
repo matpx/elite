@@ -8,7 +8,7 @@ style.caret_width = common.round(2 * SCALE)
 style.tab_width = common.round(170 * SCALE)
 
 style.font = renderer.font.load(EXEDIR .. "/data/fonts/font.ttf", 14 * SCALE)
-style.language_font = renderer.font.load(EXEDIR .. "/data/fonts/language.ttf", 14 * SCALE)
+style.language_font = renderer.font.load(EXEDIR .. "/data/fonts/devicon.ttf", 14 * SCALE)
 style.big_font = renderer.font.load(EXEDIR .. "/data/fonts/font.ttf", 34 * SCALE)
 style.icon_font = renderer.font.load(EXEDIR .. "/data/fonts/icons.ttf", 14 * SCALE)
 style.code_font = renderer.font.load(EXEDIR .. "/data/fonts/monospace.ttf", 13.5 * SCALE)

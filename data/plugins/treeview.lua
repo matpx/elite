@@ -221,7 +221,6 @@ command.add(nil, {
 	["treeview:toggle"] = function()
 		view.visible = not view.visible
 	end,
-	
 	["treeview:expand"] = function()
 		local doc = core.active_view.doc
 

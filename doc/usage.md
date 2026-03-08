@@ -45,17 +45,14 @@ or otherwise directly opening the `data/user/init.lua` file.
 
 
 ## Project Module
-The project module is an optional module which is loaded from the current
-project's directory when lite is started. Project modules can be useful for
-things like adding custom commands for project-specific build systems, or
-loading project-specific plugins.
+The project module is an optional `.lite_project.lua` file in the project's
+directory. Project modules can be useful for things like adding custom commands
+for project-specific build systems, or loading project-specific plugins.
 
-The project module is loaded by lite when the application starts, after both the
-plugins and user module have been loaded.
-
-The project module can be edited by running the `core:open-project-module`
-command — if the module does not exist for the current project when the
-command is run it will be created.
+By default, the project module is not automatically loaded. If an untrusted
+project module is found, lite will log a notice. To load it, either run the
+`core:load-project-module` command or enable `config.auto_load_project_module`
+in your user module.
 
 
 ## Commands
@@ -123,6 +120,11 @@ To install a plugin simply drop it in the `data/plugins` directory — installed
 plugins will be automatically loaded when lite starts. To uninstall a plugin the
 plugin file can be deleted — any plugin (including those included with lite's
 default installation) can be deleted to remove its functionality.
+
+To disable a plugin without deleting it, rename the file to end with
+`.disabled` (e.g. `autowrap.lua.disabled`). Only files ending in `.lua` are
+loaded, so the `.disabled` suffix prevents the plugin from being loaded. To
+re-enable it, simply remove the `.disabled` ending.
 
 If you want to load a plugin only under a certain circumstance (for example,
 only on a given project) the plugin can be placed somewhere other than the

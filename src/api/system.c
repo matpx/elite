@@ -333,14 +333,14 @@ static int f_exec(lua_State *L) {
   }
 #if _WIN32
   sprintf(buf, "cmd /c \"%s\"", cmd);
-  WinExec(buf, SW_HIDE);
+  int ok = WinExec(buf, SW_HIDE) > 31;
 #else
   sprintf(buf, "%s &", cmd);
-  int res = system(buf);
-  (void)res;
+  int ok = system(buf) == 0;
 #endif
   free(buf);
-  return 0;
+  lua_pushboolean(L, ok);
+  return 1;
 }
 
 static int f_fuzzy_match(lua_State *L) {

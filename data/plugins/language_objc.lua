@@ -37,7 +37,6 @@ syntax.add {
     ["extern"]   = "keyword",
     ["static"]   = "keyword",
     ["volatile"] = "keyword",
-    ["const"]    = "keyword",
     ["inline"]   = "keyword",
     ["switch"]   = "keyword",
     ["case"]     = "keyword",

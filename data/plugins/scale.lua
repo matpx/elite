@@ -20,7 +20,7 @@ font_cache[style.code_font] = { EXEDIR .. "/data/fonts/monospace.ttf", 13.5 * SC
 
 
 local load_font = renderer.font.load
-function renderer.font.load(...)
+function renderer.font.load(...) -- luacheck: ignore 1
   local res = load_font(...)
   font_cache[res] = { ... }
   return res
@@ -56,7 +56,7 @@ local function set_scale(scale)
   current_scale = scale
 
   if config.scale_mode == "ui" then
-    SCALE = current_scale
+    SCALE = current_scale -- luacheck: ignore 111
 
     style.padding.x      = style.padding.x      * s
     style.padding.y      = style.padding.y      * s

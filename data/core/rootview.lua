@@ -337,22 +337,22 @@ function Node:draw_tabs()
   renderer.draw_rect(x, y + h - ds, self.size.x, ds, style.divider)
 
   for i, view in ipairs(self.views) do
-    local x, y, w, h = self:get_tab_rect(i)
+    local x2, y2, w2, h2 = self:get_tab_rect(i)
     local text = view:get_name()
     local color = style.dim
     if view == self.active_view then
       color = style.text
-      renderer.draw_rect(x, y, w, h, style.background)
-      renderer.draw_rect(x + w, y, ds, h, style.divider)
-      renderer.draw_rect(x - ds, y, ds, h, style.divider)
+      renderer.draw_rect(x2, y2, w2, h2, style.background)
+      renderer.draw_rect(x2 + w2, y2, ds, h2, style.divider)
+      renderer.draw_rect(x2 - ds, y2, ds, h2, style.divider)
     end
     if i == self.hovered_tab then
       color = style.text
     end
-    core.push_clip_rect(x, y, w, h)
-    x, w = x + style.padding.x, w - style.padding.x * 2
-    local align = style.font:get_width(text) > w and "left" or "center"
-    common.draw_text(style.font, color, text, align, x, y, w, h)
+    core.push_clip_rect(x2, y2, w2, h2)
+    x2, w2 = x2 + style.padding.x, w2 - style.padding.x * 2
+    local align = style.font:get_width(text) > w2 and "left" or "center"
+    common.draw_text(style.font, color, text, align, x2, y2, w2, h2)
     core.pop_clip_rect()
   end
 

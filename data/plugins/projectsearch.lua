@@ -72,7 +72,7 @@ end
 function ResultsView:on_mouse_moved(mx, my, ...)
   ResultsView.super.on_mouse_moved(self, mx, my, ...)
   self.selected_idx = 0
-  for i, item, x,y,w,h in self:each_visible_result() do
+  for i, _, x,y,w,h in self:each_visible_result() do
     if mx >= x and my >= y and mx < x + w and my < y + h then
       self.selected_idx = i
       break
@@ -177,27 +177,26 @@ function ResultsView:draw()
 
   -- horizontal line
   local yoffset = self:get_results_yoffset()
-  local x = ox + style.padding.x
+  x = ox + style.padding.x
   local w = self.size.x - style.padding.x * 2
   local h = style.divider_size
-  local color = common.lerp(style.dim, style.text, self.brightness / 100)
+  color = common.lerp(style.dim, style.text, self.brightness / 100)
   renderer.draw_rect(x, oy + yoffset - style.padding.y, w, h, color)
   if self.searching then
     renderer.draw_rect(x, oy + yoffset - style.padding.y, w * per, h, style.text)
   end
 
   -- results
-  local y1, y2 = self.position.y, self.position.y + self.size.y
-  for i, item, x,y,w,h in self:each_visible_result() do
-    local color = style.text
+  for i, item, rx,ry,rw,rh in self:each_visible_result() do
+    local rcolor = style.text
     if i == self.selected_idx then
-      color = style.accent
-      renderer.draw_rect(x, y, w, h, style.line_highlight)
+      rcolor = style.accent
+      renderer.draw_rect(rx, ry, rw, rh, style.line_highlight)
     end
-    x = x + style.padding.x
-    local text = string.format("%s at line %d (col %d): ", item.file, item.line, item.col)
-    x = common.draw_text(style.font, style.dim, text, "left", x, y, w, h)
-    x = common.draw_text(style.code_font, color, item.text, "left", x, y, w, h)
+    rx = rx + style.padding.x
+    local rtext = string.format("%s at line %d (col %d): ", item.file, item.line, item.col)
+    rx = common.draw_text(style.font, style.dim, rtext, "left", rx, ry, rw, rh)
+    common.draw_text(style.code_font, rcolor, item.text, "left", rx, ry, rw, rh)
   end
 
   self:draw_scrollbar()

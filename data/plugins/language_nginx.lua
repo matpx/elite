@@ -43,7 +43,6 @@ syntax.add {
     ["worker_rlimit_nofile"] = "keyword",
     ["worker_rlimit_sigpending"] = "keyword",
     ["working_directory"] = "keyword",
-    ["try_files"] = "keyword",
 
     -- constant.language.directive.module.events
     ["accept_mutex"] = "keyword",
@@ -95,7 +94,6 @@ syntax.add {
     ["satisfy_any"] = "keyword",
     ["send_timeout"] = "keyword",
     ["sendfile"] = "keyword",
-    ["server"] = "keyword",
     ["server_name"] = "keyword",
     ["server_names_hash_max_size"] = "keyword",
     ["server_names_hash_bucket_size"] = "keyword",

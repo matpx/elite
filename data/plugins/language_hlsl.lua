@@ -1,7 +1,4 @@
 
-local style = require "core.style"
-local common = require "core.common"
-
 local syntax = require "core.syntax"
 
 syntax.add {

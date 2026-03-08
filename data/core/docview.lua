@@ -22,17 +22,17 @@ end
 
 
 DocView.translate = {
-  ["previous_page"] = function(doc, line, col, dv)
+  ["previous_page"] = function(_doc, line, _col, dv)
     local min, max = dv:get_visible_line_range()
     return line - (max - min), 1
   end,
 
-  ["next_page"] = function(doc, line, col, dv)
+  ["next_page"] = function(_doc, line, _col, dv)
     local min, max = dv:get_visible_line_range()
     return line + (max - min), 1
   end,
 
-  ["previous_line"] = function(doc, line, col, dv)
+  ["previous_line"] = function(_doc, line, col, dv)
     if line == 1 then
       return 1, 1
     end
@@ -125,7 +125,7 @@ end
 
 
 function DocView:get_visible_line_range()
-  local x, y, x2, y2 = self:get_content_bounds()
+  local _, y, _, y2 = self:get_content_bounds()
   local lh = self:get_line_height()
   local minline = math.max(1, math.floor(y / lh))
   local maxline = math.min(#self.doc.lines, math.floor(y2 / lh) + 1)
@@ -186,7 +186,7 @@ function DocView:scroll_to_make_visible(line, col)
   self.scroll.to.y = math.max(self.scroll.to.y, max)
   local gw = self:get_gutter_width()
   local xoffset = self:get_col_x_offset(line, col)
-  local max = xoffset - self.size.x + gw + self.size.x / 5
+  max = xoffset - self.size.x + gw + self.size.x / 5
   self.scroll.to.x = math.max(0, max)
 end
 
@@ -271,7 +271,7 @@ function DocView:update()
     self.blink_timer = 0
     self.last_line, self.last_col = line, col
   end
-  
+
   if self.last_idle_state ~= core.is_idle then
     self.last_idle_state = core.is_idle
     self.blink_timer = 0
@@ -371,7 +371,7 @@ function DocView:draw()
     y = y + lh
   end
 
-  local x, y = self:get_line_screen_position(minline)
+  x, y = self:get_line_screen_position(minline)
   local gw = self:get_gutter_width()
   local pos = self.position
   core.push_clip_rect(pos.x + gw, pos.y, self.size.x, self.size.y)

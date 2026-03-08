@@ -21,7 +21,7 @@ function ClockView:new()
 end
 
 
-function ClockView:get_name()
+function ClockView.get_name(_self)
   return "Big Clock"
 end
 
@@ -55,7 +55,8 @@ function ClockView:draw()
   self:draw_background(style.background)
   local x, y = self.position.x, self.position.y
   local w, h = self.size.x, self.size.y
-  local _, y = common.draw_text(self.time_font, style.text, self.time_text, "center", x, y, w, h)
+  local _
+  _, y = common.draw_text(self.time_font, style.text, self.time_text, "center", x, y, w, h)
   local th = self.date_font:get_height()
   common.draw_text(self.date_font, style.dim, self.date_text, "center", x, y, w, th)
 end

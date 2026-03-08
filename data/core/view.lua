@@ -33,7 +33,7 @@ function View:move_towards(t, k, dest, rate)
 end
 
 
-function View:try_close(do_close)
+function View.try_close(_self, do_close)
   do_close()
 end
 
@@ -68,7 +68,7 @@ function View:scrollbar_overlaps_point(x, y)
 end
 
 
-function View:on_mouse_pressed(button, x, y, clicks)
+function View:on_mouse_pressed(_button, x, y, _clicks)
   if self:scrollbar_overlaps_point(x, y) then
     self.dragging_scrollbar = true
     return true
@@ -76,12 +76,12 @@ function View:on_mouse_pressed(button, x, y, clicks)
 end
 
 
-function View:on_mouse_released(button, x, y)
+function View:on_mouse_released(_button, _x, _y)
   self.dragging_scrollbar = false
 end
 
 
-function View:on_mouse_moved(x, y, dx, dy)
+function View:on_mouse_moved(x, y, _dx, dy)
   if self.dragging_scrollbar then
     local delta = self:get_scrollable_size() / self.size.y * dy
     self.scroll.to.y = self.scroll.to.y + delta
@@ -90,7 +90,7 @@ function View:on_mouse_moved(x, y, dx, dy)
 end
 
 
-function View:on_text_input(text)
+function View:on_text_input(_text)
   -- no-op
 end
 

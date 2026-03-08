@@ -154,7 +154,7 @@ local commands = {
 
   ["doc:select-word"] = function()
     local line1, col1 = doc():get_selection(true)
-    local line1, col1 = translate.start_of_word(doc(), line1, col1)
+    line1, col1 = translate.start_of_word(doc(), line1, col1)
     local line2, col2 = translate.end_of_word(doc(), line1, col1)
     doc():set_selection(line2, col2, line1, col1)
   end,
@@ -253,14 +253,14 @@ local commands = {
   end,
 
   ["doc:go-to-line"] = function()
-    local dv = dv()
+    local cur_dv = dv()
 
     local items
     local function init_items()
       if items then return end
       items = {}
       local mt = { __tostring = function(x) return x.text end }
-      for i, line in ipairs(dv.doc.lines) do
+      for i, line in ipairs(cur_dv.doc.lines) do
         local item = { text = line:sub(1, -2), line = i, info = "line: " .. i }
         table.insert(items, setmetatable(item, mt))
       end
@@ -272,8 +272,8 @@ local commands = {
         core.error("Invalid line number or unmatched string")
         return
       end
-      dv.doc:set_selection(line, 1  )
-      dv:scroll_to_line(line, true)
+      cur_dv.doc:set_selection(line, 1  )
+      cur_dv:scroll_to_line(line, true)
 
     end, function(text)
       if not text:find("^%d*$") then

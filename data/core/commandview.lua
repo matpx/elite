@@ -55,12 +55,12 @@ function CommandView:get_line_screen_position()
 end
 
 
-function CommandView:get_scrollable_size()
+function CommandView.get_scrollable_size(_self)
   return 0
 end
 
 
-function CommandView:scroll_to_make_visible()
+function CommandView.scroll_to_make_visible(_self)
   -- no-op function to disable this functionality
 end
 
@@ -184,15 +184,15 @@ function CommandView:update()
 
   -- update suggestions box height
   local lh = self:get_suggestion_line_height()
-  local dest = #self.suggestions * lh
+  dest = #self.suggestions * lh
   self:move_towards("suggestions_height", dest)
 
   -- update suggestion cursor offset
-  local dest = self.suggestion_idx * self:get_suggestion_line_height()
+  dest = self.suggestion_idx * self:get_suggestion_line_height()
   self:move_towards("selection_offset", dest)
 
   -- update size based on whether this is the active_view
-  local dest = 0
+  dest = 0
   if self == core.active_view then
     dest = style.font:get_height() + style.padding.y * 2
   end
@@ -200,12 +200,12 @@ function CommandView:update()
 end
 
 
-function CommandView:draw_line_highlight()
+function CommandView.draw_line_highlight(_self)
   -- no-op function to disable this functionality
 end
 
 
-function CommandView:draw_line_gutter(idx, x, y)
+function CommandView:draw_line_gutter(_idx, x, y)
   local yoffset = self:get_line_text_y_offset()
   local pos = self.position
   local color = common.lerp(style.text, style.accent, self.gutter_text_brightness / 100)

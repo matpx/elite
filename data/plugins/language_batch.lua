@@ -28,9 +28,9 @@ local symtable = {
  },
 }
 -- prepare a mixed symbol list
-local function prepare_symbols(symtable)
+local function prepare_symbols(syms)
   local symbols = { }
-  for symtype, symlist in pairs(symtable) do
+  for symtype, symlist in pairs(syms) do
     for _, symname in ipairs(symlist) do
       symbols[symname:lower()] = symtype
     symbols[symname:upper()] = symtype

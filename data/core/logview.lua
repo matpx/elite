@@ -63,7 +63,8 @@ function LogView:draw()
     renderer.draw_text(style.font, " at " .. item.at, x, y, style.dim)
     y = y + th
     if item.info then
-      subx, y = draw_text_multiline(style.font, item.info, subx, y, style.dim)
+      local _
+      _, y = draw_text_multiline(style.font, item.info, subx, y, style.dim)
       y = y + th
     end
     y = y + style.padding.y

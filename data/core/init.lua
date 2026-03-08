@@ -37,7 +37,7 @@ local function project_scan_thread()
 
     for _, file in ipairs(all) do
       if not common.match_pattern(file, config.ignore_files) then
-        local file = (path ~= "." and path .. PATHSEP or "") .. file
+        file = (path ~= "." and path .. PATHSEP or "") .. file
         local info = system.get_file_info(file)
         if info and info.size < size_limit then
           info.filename = file

@@ -83,7 +83,7 @@ end
 
 
 function common.path_suggest(text)
-  local path, name = text:match("^(.-)([^/\\]*)$")
+  local path = text:match("^(.-)([^/\\]*)$")
   local files = system.list_dir(path == "" and "." or path) or {}
   local res = {}
   for _, file in ipairs(files) do

@@ -17,15 +17,15 @@ local last_doc
 local last_fn, last_text
 
 
-local function push_previous_find(doc, sel)
-  if last_doc ~= doc then
-    last_doc = doc
+local function push_previous_find(found_doc, sel)
+  if last_doc ~= found_doc then
+    last_doc = found_doc
     previous_finds = {}
   end
   if #previous_finds >= max_previous_finds then
     table.remove(previous_finds, 1)
   end
-  table.insert(previous_finds, sel or { doc:get_selection() })
+  table.insert(previous_finds, sel or { found_doc:get_selection() })
 end
 
 
@@ -37,20 +37,20 @@ local function find(label, search_fn)
 
   core.command_view:set_text(text, true)
 
-  core.command_view:enter(label, function(text)
+  core.command_view:enter(label, function(search_text)
     if found then
-      last_fn, last_text = search_fn, text
+      last_fn, last_text = search_fn, search_text
       previous_finds = {}
       push_previous_find(dv.doc, sel)
     else
-      core.error("Couldn't find %q", text)
+      core.error("Couldn't find %q", search_text)
       dv.doc:set_selection(table.unpack(sel))
       dv:scroll_to_make_visible(sel[1], sel[2])
     end
 
-  end, function(text)
-    local ok, line1, col1, line2, col2 = pcall(search_fn, dv.doc, sel[1], sel[2], text)
-    if ok and line1 and text ~= "" then
+  end, function(search_text)
+    local ok, line1, col1, line2, col2 = pcall(search_fn, dv.doc, sel[1], sel[2], search_text)
+    if ok and line1 and search_text ~= "" then
       dv.doc:set_selection(line2, col2, line1, col1)
       dv:scroll_to_line(line2, true)
       found = true
@@ -94,21 +94,21 @@ command.add(has_selection, {
   ["find-replace:select-next"] = function()
     local l1, c1, l2, c2 = doc():get_selection(true)
     local text = doc():get_text(l1, c1, l2, c2)
-    local l1, c1, l2, c2 = search.find(doc(), l2, c2, text, { wrap = true })
+    l1, c1, l2, c2 = search.find(doc(), l2, c2, text, { wrap = true })
     if l2 then doc():set_selection(l2, c2, l1, c1) end
   end
 })
 
 command.add("core.docview", {
   ["find-replace:find"] = function()
-    find("Find Text", function(doc, line, col, text)
+    find("Find Text", function(doc, line, col, text) -- luacheck: ignore 431
       local opt = { wrap = true, no_case = true }
       return search.find(doc, line, col, text, opt)
     end)
   end,
 
   ["find-replace:find-pattern"] = function()
-    find("Find Text Pattern", function(doc, line, col, text)
+    find("Find Text Pattern", function(doc, line, col, text) -- luacheck: ignore 431
       local opt = { wrap = true, no_case = true, pattern = true }
       return search.find(doc, line, col, text, opt)
     end)

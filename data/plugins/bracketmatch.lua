@@ -58,11 +58,11 @@ local function update_state(line_limit)
   local line2, col2
   for _, map in ipairs(bracket_maps) do
     for i = 0, -1, -1 do
-      local line, col = doc:position_offset(line, col, i)
-      local open = doc.lines[line]:byte(col)
+      local sline, scol = doc:position_offset(line, col, i)
+      local open = doc.lines[sline]:byte(scol)
       local close = map[open]
       if close then
-        line2, col2 = get_matching_bracket(doc, line, col, line_limit, open, close, map.step)
+        line2, col2 = get_matching_bracket(doc, sline, scol, line_limit, open, close, map.step)
         goto found
       end
     end

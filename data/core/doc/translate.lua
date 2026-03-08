@@ -85,7 +85,7 @@ function translate.end_of_word(doc, line, col)
 end
 
 
-function translate.previous_block_start(doc, line, col)
+function translate.previous_block_start(doc, line, _col)
   while true do
     line = line - 1
     if line <= 1 then
@@ -99,7 +99,7 @@ function translate.previous_block_start(doc, line, col)
 end
 
 
-function translate.next_block_end(doc, line, col)
+function translate.next_block_end(doc, line, _col)
   while true do
     if line >= #doc.lines then
       return #doc.lines, 1
@@ -113,22 +113,22 @@ function translate.next_block_end(doc, line, col)
 end
 
 
-function translate.start_of_line(doc, line, col)
+function translate.start_of_line(_doc, line, _col)
   return line, 1
 end
 
 
-function translate.end_of_line(doc, line, col)
+function translate.end_of_line(_doc, line, _col)
   return line, math.huge
 end
 
 
-function translate.start_of_doc(doc, line, col)
+function translate.start_of_doc(_doc, _line, _col)
   return 1, 1
 end
 
 
-function translate.end_of_doc(doc, line, col)
+function translate.end_of_doc(doc, _line, _col)
   return #doc.lines, #doc.lines[#doc.lines]
 end
 

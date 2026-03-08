@@ -23,7 +23,7 @@ command.add(nil, {
 
   ["core:reload-module"] = function()
     core.command_view:enter("Reload Module", function(text, item)
-      local text = item and item.text or text
+      text = item and item.text or text
       core.reload_module(text)
       core.log("Reloaded module %q", text)
     end, function(text)
@@ -39,7 +39,7 @@ command.add(nil, {
     local commands = command.get_all_valid()
     local valid = {}
     for _, name in ipairs(commands) do valid[name] = true end
-    core.command_view:enter("Do Command", function(text, item)
+    core.command_view:enter("Do Command", function(_text, item)
       if item then
         command.perform(item.command)
       end

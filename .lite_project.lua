@@ -1,5 +1,3 @@
-local core = require "core"
-
 local windows = PLATFORM == "Windows"
 local output = windows and "lite.exe" or "lite"
 

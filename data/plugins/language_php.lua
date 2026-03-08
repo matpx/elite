@@ -29,7 +29,6 @@ syntax.add {
     ["endif"] = "keyword",
     ["declare"] = "keyword",
     ["enddeclare"] = "keyword",
-    ["switch"] = "keyword",
     ["endswitch"] = "keyword",
     ["as"] = "keyword",
     ["do"] = "keyword",

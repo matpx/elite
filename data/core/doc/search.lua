@@ -30,14 +30,14 @@ end
 function search.find(doc, line, col, text, opt)
   doc, line, col, text, opt = init_args(doc, line, col, text, opt)
 
-  for line = line, #doc.lines do
-    local line_text = doc.lines[line]
+  for _line = line, #doc.lines do
+    local line_text = doc.lines[_line]
     if opt.no_case then
       line_text = line_text:lower()
     end
     local s, e = line_text:find(text, col, not opt.pattern)
     if s then
-      return line, s, line, e + 1
+      return _line, s, _line, e + 1
     end
     col = 1
   end

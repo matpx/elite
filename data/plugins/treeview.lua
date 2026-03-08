@@ -11,7 +11,7 @@ config.treeview_min_size = 200 * SCALE
 
 local function get_depth(filename)
   local n = 0
-  for sep in filename:gmatch("[\\/]") do
+  for _ in filename:gmatch("[\\/]") do
     n = n + 1
   end
   return n
@@ -111,7 +111,7 @@ function TreeView:on_mouse_moved(px, py)
 end
 
 
-function TreeView:on_mouse_pressed(button, x, y)
+function TreeView:on_mouse_pressed(_button, _x, _y)
   if not self.hovered_item then
     return
   elseif self.hovered_item.type == "dir" then

@@ -33,7 +33,7 @@ local function tabularize_lines(lines, delim)
   end
 
   -- write columns back to lines array
-  for i, line in ipairs(lines) do
+  for i, _ in ipairs(lines) do
     lines[i] = table.concat(rows[i], delim)
   end
 end

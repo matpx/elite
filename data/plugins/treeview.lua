@@ -210,6 +210,23 @@ local view = TreeView()
 local node = core.root_view:get_active_node()
 node:split("left", view, true)
 
+-- register commands and keymap
+command.add(nil, {
+	["treeview:toggle"] = function()
+		view.visible = not view.visible
+	end,
+	
+	["treeview:expand"] = function()
+		local doc = core.active_view.doc
+
+		if doc and doc.filename then
+			view:expand_to(core.active_view.doc.filename)
+		end
+	end,
+})
+
+keymap.add({ ["ctrl+b"] = "treeview:toggle" })
+
 -- hook into core.open_file to expand treeview to opened file
 if config.treeview_expand_on_open then
 	local open_file = core.open_file
@@ -220,12 +237,3 @@ if config.treeview_expand_on_open then
 		return open_file(filename, ...)
 	end
 end
-
--- register commands and keymap
-command.add(nil, {
-	["treeview:toggle"] = function()
-		view.visible = not view.visible
-	end,
-})
-
-keymap.add({ ["ctrl+b"] = "treeview:toggle" })

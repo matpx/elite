@@ -43,6 +43,12 @@ local function parse_line(line)
 		return file, tonumber(ln), kind, msg
 	end
 
+	-- file:line:col: syntax error: message (go)
+	file, ln, msg = line:match("^(.+):(%d+):%d+: syntax error: (.+)$")
+	if file then
+		return file, tonumber(ln), "error", "syntax error: " .. msg
+	end
+
 	-- file:line: kind: message (tcc)
 	file, ln, kind, msg = line:match("^(.+):(%d+): (%w+): (.+)$")
 	if file and kind_colors[kind] then

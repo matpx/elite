@@ -1,7 +1,6 @@
 local core = require("core")
 local config = require("core.config")
 local Doc = require("core.doc")
-local ImageView = require("core.imageview")
 
 local times = setmetatable({}, { __mode = "k" })
 local last_change_time = 0
@@ -21,14 +20,14 @@ core.add_thread(function()
 				coroutine.yield()
 			end
 
-			-- check open image views
+			-- check open views with a reload method (e.g. image views)
 			for _, view in ipairs(core.root_view.root_node:get_children()) do
-				if view:is(ImageView) then
+				if view.filename and view.reload then
 					local info = system.get_file_info(view.filename or "")
 					if info and times[view] ~= info.modified then
 						view:reload()
 						times[view] = info.modified
-						core.log_quiet('Auto-reloaded image "%s"', view.filename)
+						core.log_quiet('Auto-reloaded "%s"', view.filename)
 					end
 				end
 				coroutine.yield()
@@ -59,14 +58,4 @@ Doc.save = function(self, ...)
 		times[self] = info.modified
 	end
 	return res
-end
-
--- patch ImageView to store modified time on creation
-local imageview_new = ImageView.new
-ImageView.new = function(self, ...)
-	imageview_new(self, ...)
-	local info = system.get_file_info(self.filename)
-	if info then
-		times[self] = info.modified
-	end
 end

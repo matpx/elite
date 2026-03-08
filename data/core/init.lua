@@ -8,7 +8,6 @@ local RootView
 local StatusView
 local CommandView
 local Doc
-local ImageView
 
 local core = {}
 
@@ -81,8 +80,6 @@ function core.init()
 	StatusView = require("core.statusview")
 	CommandView = require("core.commandview")
 	Doc = require("core.doc")
-	ImageView = require("core.imageview")
-
 	local project_dir = EXEDIR
 	local files = {}
 	for i = 2, #ARGS do
@@ -276,16 +273,7 @@ function core.open_doc(filename)
 	return doc
 end
 
-function core.open_image(filename)
-	local view = ImageView(filename)
-	core.log_quiet('Opened image "%s"', filename)
-	return view
-end
-
 function core.open_file(filename)
-	if filename and ImageView.is_image(filename) then
-		return core.root_view:open_image(core.open_image(filename))
-	end
 	return core.root_view:open_doc(core.open_doc(filename))
 end
 

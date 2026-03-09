@@ -7,8 +7,9 @@ ifneq ($(NO_AVX),1)
   CFLAGS += -march=x86-64-v3
 endif
 
-SRCS = $(shell find src -name '*.c')
-OBJS = $(SRCS:%.c=build/%.o)
+SRCS    = $(shell find src -name '*.c')
+BUILDDIR = build/$(or $(OS),linux)
+OBJS    = $(SRCS:%.c=$(BUILDDIR)/%.o)
 
 # --- Linux (default) ---
 
@@ -51,7 +52,7 @@ ifeq ($(OS),windows)
 endif
 	$(CC) $(OBJS) $(LDFLAGS) -o $@
 
-build/%.o: %.c
+$(BUILDDIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 

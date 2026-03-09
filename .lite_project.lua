@@ -1,6 +1,10 @@
+local config = require("core.config")
+
 local windows = PLATFORM == "Windows"
 local output = windows and "lite.exe" or "lite"
 local logfile = "runner.txt"
+
+-- runner
 
 global { runner = {
   build = function()
@@ -18,3 +22,10 @@ global { runner = {
     return os.remove(output)
   end,
 } }
+
+-- formatter
+
+local window_stylua = EXEDIR .. "/winlib/stylua/stylua.exe - <"
+local linux_stylua = EXEDIR .. "/winlib/stylua/stylua.exe - <"
+
+config.formatter_commands[".lua"] = windows and window_stylua or linux_stylua

@@ -27,6 +27,13 @@ ifeq ($(OS),windows)
   TARGET   = lite.exe
 endif
 
+# --- Sanitizers ---
+
+ifeq ($(SANITIZE),1)
+  CFLAGS  += -fsanitize=address,undefined -fno-omit-frame-pointer
+  LDFLAGS += -fsanitize=address,undefined
+endif
+
 # --- LTO ---
 
 ifneq ($(NO_LTO),1)

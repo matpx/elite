@@ -122,16 +122,27 @@ local get_items = StatusView.get_items
 function StatusView:get_items()
     local left, right = get_items(self)
     if file_found then
-        local label = "no errors"
-        local color = style.good or style.accent
         if error_count > 0 or warning_count > 0 then
-            label = string.format("errors: %d warnings: %d", error_count, warning_count)
-            color = error_count > 0 and kind_colors.error or kind_colors.warning
+            table.insert(right, style.dim)
+            table.insert(right, self.separator)
+            if error_count > 0 then
+                table.insert(right, kind_colors.error)
+                table.insert(right, string.format("errors: %d", error_count))
+            end
+            if error_count > 0 and warning_count > 0 then
+                table.insert(right, style.dim)
+                table.insert(right, " | ")
+            end
+            if warning_count > 0 then
+                table.insert(right, kind_colors.warning)
+                table.insert(right, string.format("warnings: %d", warning_count))
+            end
+        else
+            table.insert(right, style.dim)
+            table.insert(right, self.separator)
+            table.insert(right, style.good or style.accent)
+            table.insert(right, "no errors")
         end
-        table.insert(right, style.dim)
-        table.insert(right, self.separator)
-        table.insert(right, color)
-        table.insert(right, label)
     end
     return left, right
 end

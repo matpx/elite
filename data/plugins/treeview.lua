@@ -235,6 +235,12 @@ command.add(nil, {
             view:expand_to(core.active_view.doc.filename)
         end
     end,
+    ["treeview:collapse-all"] = function()
+        for _, v in pairs(view.cache) do
+            v.expanded = false
+            v.skip = nil
+        end
+    end,
 })
 
 keymap.add({ ["ctrl+b"] = "treeview:toggle" })

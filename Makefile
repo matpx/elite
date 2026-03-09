@@ -30,7 +30,7 @@ endif
 # --- Sanitizers ---
 
 ifeq ($(SANITIZE),1)
-  CFLAGS  += -fsanitize=address,undefined -fno-omit-frame-pointer
+  CFLAGS  += -fsanitize=address,undefined -fno-omit-frame-pointer -Wno-unused-but-set-variable
   LDFLAGS += -fsanitize=address,undefined
 endif
 

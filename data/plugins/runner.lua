@@ -10,11 +10,10 @@
 
 local core = require("core")
 local command = require("core.command")
+local config = require("core.config")
 local keymap = require("core.keymap")
-local style = require("core.style")
-local StatusView = require("core.statusview")
 
-local last_status = nil
+config.runner_save_on_build = true
 
 local function save_all()
     for _, doc in ipairs(core.docs) do
@@ -25,57 +24,29 @@ local function save_all()
 end
 
 local function run_task(name)
-    if name == "build" then
+    if config.runner_save_on_build and name == "build" then
         save_all()
     end
     local r = rawget(_G, "runner")
     if type(r) ~= "table" or not r[name] then
         core.error("runner: no '%s' function defined", name)
-        return
+        return false
     end
     local ok, success = pcall(r[name])
     if not ok then
-        last_status = false
         core.error("runner %s error: %s", name, success)
+        return false
+    end
+    if name == "build" then
+        local dr = rawget(_G, "diagnostics_reload")
+        if dr then dr() end
+    end
+    if success then
+        core.log("runner %s succeeded", name)
     else
-        local dr = name == "build" and rawget(_G, "diagnostics_reload")
-        local has_errors = dr and dr()
-        if success and not has_errors then
-            last_status = true
-            core.log("runner %s succeeded", name)
-        else
-            last_status = false
-            core.error("runner %s failed", name)
-        end
+        core.error("runner %s failed", name)
     end
-end
-
--- status bar
-local get_items = StatusView.get_items
-
-function StatusView:get_items()
-    if type(rawget(_G, "runner")) ~= "table" then
-        return get_items(self)
-    end
-    local left, right = get_items(self)
-
-    local label, color
-    if last_status == nil then
-        label = "ready"
-        color = style.dim
-    elseif last_status then
-        label = "success"
-        color = style.good or style.accent
-    else
-        label = "failed"
-        color = style.accent
-    end
-
-    table.insert(right, style.dim)
-    table.insert(right, self.separator)
-    table.insert(right, color)
-    table.insert(right, "runner: " .. label)
-    return left, right
+    return success
 end
 
 command.add(nil, {
@@ -83,8 +54,7 @@ command.add(nil, {
         run_task("build")
     end,
     ["runner:build-and-run"] = function()
-        run_task("build")
-        if last_status then
+        if run_task("build") then
             run_task("run")
         end
     end,

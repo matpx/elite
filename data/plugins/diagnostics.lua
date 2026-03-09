@@ -1,7 +1,7 @@
 -- Parses a log file for compiler diagnostics and displays them inline.
 --
 -- Config:
---   config.diagnostics_file = "runner.txt"  -- path to log file (relative to project)
+--   config.diagnostics_file = "build.txt"  -- path to log file (relative to project)
 --
 -- Supports gcc/clang/tcc output formats:
 --   file:line:col: kind: message
@@ -11,12 +11,15 @@ local core = require("core")
 local config = require("core.config")
 local style = require("core.style")
 local DocView = require("core.docview")
+local StatusView = require("core.statusview")
 
-config.diagnostics_file = "runner.txt"
+config.diagnostics_file = "build.txt"
 
 local diagnostics = {}
 local last_modified = 0
 local last_change_time = 0
+local error_count, warning_count = 0, 0
+local file_found = false
 
 local kind_colors = {
     error = { 255, 80, 80, 255 },
@@ -58,15 +61,17 @@ end
 
 local function reload()
     diagnostics = {}
+    error_count, warning_count = 0, 0
+    file_found = false
     local path = config.diagnostics_file
     if not path then
-        return false
+        return
     end
     local fp = io.open(path, "r")
     if not fp then
-        return false
+        return
     end
-    local has_errors = false
+    file_found = true
     for line in fp:lines() do
         local file, ln, kind, msg = parse_line(line)
         if file then
@@ -79,12 +84,13 @@ local function reload()
             end
             table.insert(diagnostics[abs][ln], { kind = kind, message = msg })
             if kind == "error" then
-                has_errors = true
+                error_count = error_count + 1
+            elseif kind == "warning" then
+                warning_count = warning_count + 1
             end
         end
     end
     fp:close()
-    return has_errors
 end
 
 -- expose reload for other plugins (e.g. runner)
@@ -98,7 +104,9 @@ core.add_thread(function()
             local path = config.diagnostics_file
             if path then
                 local info = system.get_file_info(path)
-                if info and info.modified ~= last_modified then
+                if not info then
+                    file_found = false
+                elseif info.modified ~= last_modified then
                     last_modified = info.modified
                     reload()
                 end
@@ -107,6 +115,26 @@ core.add_thread(function()
         coroutine.yield(config.project_scan_rate)
     end
 end)
+
+-- status bar
+local get_items = StatusView.get_items
+
+function StatusView:get_items()
+    local left, right = get_items(self)
+    if file_found then
+        local label = "no errors"
+        local color = style.good or style.accent
+        if error_count > 0 or warning_count > 0 then
+            label = string.format("errors: %d warnings: %d", error_count, warning_count)
+            color = error_count > 0 and kind_colors.error or kind_colors.warning
+        end
+        table.insert(right, style.dim)
+        table.insert(right, self.separator)
+        table.insert(right, color)
+        table.insert(right, label)
+    end
+    return left, right
+end
 
 local function get_line_diags(doc, idx)
     if not doc.filename then

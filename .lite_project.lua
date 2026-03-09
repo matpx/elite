@@ -2,7 +2,7 @@ local config = require("core.config")
 
 local windows = PLATFORM == "Windows"
 local output = windows and "lite.exe" or "lite"
-local logfile = "runner.txt"
+local logfile = config.diagnostics_file
 
 -- runner
 

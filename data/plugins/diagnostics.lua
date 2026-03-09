@@ -1,7 +1,7 @@
 -- Parses a log file for compiler diagnostics and displays them inline.
 --
 -- Config:
---   config.diagnostics_file = "build.txt"  -- path to log file (relative to project)
+--   config.diagnostics_file = "diagnostics.txt"  -- path to log file (relative to project)
 --
 -- Supports gcc/clang/tcc output formats:
 --   file:line:col: kind: message
@@ -13,7 +13,7 @@ local style = require("core.style")
 local DocView = require("core.docview")
 local StatusView = require("core.statusview")
 
-config.diagnostics_file = "build.txt"
+config.diagnostics_file = "diagnostics.txt"
 
 local diagnostics = {}
 local last_modified = 0

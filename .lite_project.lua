@@ -8,9 +8,9 @@ local logfile = config.diagnostics_file
 
 global { runner = {
   build = function()
-    return os.execute(windows
-      and "( build.bat 2>&1 && winlib\\luacheck\\luacheck.exe --formatter plain --codes . 2>&1 ) >" .. logfile
-      or "{ ./build.sh 2>&1 && luacheck --formatter plain --codes . 2>&1; } >" .. logfile)
+    local make = windows and "mingw32-make" or "make"
+    return os.execute(
+      "{ " .. make .. " -j 2>&1 && luacheck --formatter plain --codes . 2>&1; } >" .. logfile)
   end,
 
   run = function()
@@ -24,7 +24,3 @@ global { runner = {
 } }
 
 -- formatter
-
-if windows then
-  config.formatter_commands[".lua"] = EXEDIR .. "/winlib/stylua/stylua.exe - <"
-end

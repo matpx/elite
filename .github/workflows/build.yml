@@ -14,29 +14,34 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y tcc cmake libx11-dev libxext-dev libxcursor-dev libxi-dev libxfixes-dev libxrandr-dev libxss-dev libxtst-dev libwayland-dev libxkbcommon-dev libegl-dev libdecor-0-dev libpulse-dev libasound2-dev
+          sudo apt-get install -y build-essential cmake libx11-dev libxext-dev libxcursor-dev libxi-dev libxfixes-dev libxrandr-dev libxss-dev libxtst-dev libwayland-dev libxkbcommon-dev libegl-dev libdecor-0-dev libpulse-dev libasound2-dev
           git clone --depth 1 --branch release-3.4.2 https://github.com/libsdl-org/SDL.git /tmp/SDL3
           cmake -S /tmp/SDL3 -B /tmp/SDL3/build -DCMAKE_BUILD_TYPE=Release
           cmake --build /tmp/SDL3/build -j$(nproc)
           sudo cmake --install /tmp/SDL3/build
       - name: Build
-        run: sh build.sh
+        run: make -j$(nproc) NO_AVX=1
 
-  windows-bat:
-    runs-on: windows-latest
+  windows:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
       - name: Build
-        shell: cmd
-        run: build.bat
+        run: make -j$(nproc) OS=windows NO_AVX=1
 
-  windows-sh:
-    runs-on: windows-latest
+  lint:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build
-        shell: bash
-        run: sh build.sh windows
+      - name: Install tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y clang-format luarocks
+          sudo luarocks install luacheck
+          curl -LSs https://github.com/JohnnyMorganz/StyLua/releases/latest/download/stylua-linux-x86_64.zip -o /tmp/stylua.zip && sudo unzip -o /tmp/stylua.zip -d /usr/local/bin
+      - name: Lint
+        run: make lint
 
   release:
     runs-on: ubuntu-latest
@@ -53,7 +58,7 @@ jobs:
           cmake --build /tmp/SDL3/build -j$(nproc)
           sudo cmake --install /tmp/SDL3/build
       - name: Build release
-        run: sh release.sh
+        run: make -j$(nproc) release NO_AVX=1
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

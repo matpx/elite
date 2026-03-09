@@ -4,9 +4,9 @@ local common = require("core.common")
 math.randomseed(os.time())
 
 local color = {
-	math.random(90, 255),
-	math.random(90, 255),
-	math.random(90, 255),
+    math.random(90, 255),
+    math.random(90, 255),
+    math.random(90, 255),
 }
 
 style.background = { common.color("#151515") }

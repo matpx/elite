@@ -12,53 +12,53 @@ config.bigclock_scale = 1
 local ClockView = View:extend()
 
 function ClockView:new()
-	ClockView.super.new(self)
-	self.time_text = ""
-	self.date_text = ""
+    ClockView.super.new(self)
+    self.time_text = ""
+    self.date_text = ""
 end
 
 function ClockView.get_name(_self)
-	return "Big Clock"
+    return "Big Clock"
 end
 
 function ClockView:update_fonts()
-	local size = math.floor(self.size.x * 0.15 / 15) * 15 * config.bigclock_scale
-	if self.font_size ~= size then
-		self.time_font = renderer.font.load(EXEDIR .. "/data/fonts/font.ttf", size)
-		self.date_font = renderer.font.load(EXEDIR .. "/data/fonts/font.ttf", size * 0.3)
-		self.font_size = size
-		collectgarbage()
-	end
-	return self.font
+    local size = math.floor(self.size.x * 0.15 / 15) * 15 * config.bigclock_scale
+    if self.font_size ~= size then
+        self.time_font = renderer.font.load(EXEDIR .. "/data/fonts/font.ttf", size)
+        self.date_font = renderer.font.load(EXEDIR .. "/data/fonts/font.ttf", size * 0.3)
+        self.font_size = size
+        collectgarbage()
+    end
+    return self.font
 end
 
 function ClockView:update()
-	local time_text = os.date(config.bigclock_time_format)
-	local date_text = os.date(config.bigclock_date_format)
-	if self.time_text ~= time_text or self.date_text ~= date_text then
-		core.redraw = true
-		self.time_text = time_text
-		self.date_text = date_text
-	end
-	ClockView.super.update(self)
+    local time_text = os.date(config.bigclock_time_format)
+    local date_text = os.date(config.bigclock_date_format)
+    if self.time_text ~= time_text or self.date_text ~= date_text then
+        core.redraw = true
+        self.time_text = time_text
+        self.date_text = date_text
+    end
+    ClockView.super.update(self)
 end
 
 function ClockView:draw()
-	self:update_fonts()
-	self:draw_background(style.background)
-	local x, y = self.position.x, self.position.y
-	local w, h = self.size.x, self.size.y
-	local _
-	_, y = common.draw_text(self.time_font, style.text, self.time_text, "center", x, y, w, h)
-	local th = self.date_font:get_height()
-	common.draw_text(self.date_font, style.dim, self.date_text, "center", x, y, w, th)
+    self:update_fonts()
+    self:draw_background(style.background)
+    local x, y = self.position.x, self.position.y
+    local w, h = self.size.x, self.size.y
+    local _
+    _, y = common.draw_text(self.time_font, style.text, self.time_text, "center", x, y, w, h)
+    local th = self.date_font:get_height()
+    common.draw_text(self.date_font, style.dim, self.date_text, "center", x, y, w, th)
 end
 
 command.add(nil, {
-	["big-clock:open"] = function()
-		local node = core.root_view:get_active_node()
-		node:add_view(ClockView())
-	end,
+    ["big-clock:open"] = function()
+        local node = core.root_view:get_active_node()
+        node:add_view(ClockView())
+    end,
 })
 
 return ClockView

@@ -9,9 +9,9 @@
 local scale = require("plugins.scale")
 -- make sure plugin is installed and has get_scale field
 if not scale.get_scale then
-	local core = require("core")
-	core.error("Plugin 'scale' needs to be updated, scalestatus inactive.")
-	return false
+    local core = require("core")
+    core.error("Plugin 'scale' needs to be updated, scalestatus inactive.")
+    return false
 end
 
 local config = require("core.config")
@@ -21,18 +21,18 @@ config.scalestatus_format = "%.0f%%"
 
 local get_items = StatusView.get_items
 function StatusView:get_items()
-	local left, right = get_items(self)
+    local left, right = get_items(self)
 
-	local t = {
-		self.separator,
-		string.format(config.scalestatus_format, scale.get_scale() * 100),
-	}
+    local t = {
+        self.separator,
+        string.format(config.scalestatus_format, scale.get_scale() * 100),
+    }
 
-	for _, item in ipairs(t) do
-		table.insert(right, item)
-	end
+    for _, item in ipairs(t) do
+        table.insert(right, item)
+    end
 
-	return left, right
+    return left, right
 end
 
 return true

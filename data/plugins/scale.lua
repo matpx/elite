@@ -20,95 +20,95 @@ font_cache[style.code_font] = { EXEDIR .. "/data/fonts/monospace.ttf", 13.5 * SC
 
 local load_font = renderer.font.load
 function renderer.font.load(...) -- luacheck: ignore 1
-	local res = load_font(...)
-	font_cache[res] = { ... }
-	return res
+    local res = load_font(...)
+    font_cache[res] = { ... }
+    return res
 end
 
 local function scale_font(font, s)
-	local fc = font_cache[font]
-	return renderer.font.load(fc[1], fc[2] * s)
+    local fc = font_cache[font]
+    return renderer.font.load(fc[1], fc[2] * s)
 end
 
 local current_scale = SCALE
 local default = current_scale
 
 local function get_scale()
-	return current_scale
+    return current_scale
 end
 
 local function set_scale(scale)
-	scale = common.clamp(scale, 0.2, 6)
+    scale = common.clamp(scale, 0.2, 6)
 
-	-- save scroll positions
-	local scrolls = {}
-	for _, view in ipairs(core.root_view.root_node:get_children()) do
-		local n = view:get_scrollable_size()
-		if n ~= math.huge and not view:is(CommandView) then
-			scrolls[view] = view.scroll.y / (n - view.size.y)
-		end
-	end
+    -- save scroll positions
+    local scrolls = {}
+    for _, view in ipairs(core.root_view.root_node:get_children()) do
+        local n = view:get_scrollable_size()
+        if n ~= math.huge and not view:is(CommandView) then
+            scrolls[view] = view.scroll.y / (n - view.size.y)
+        end
+    end
 
-	local s = scale / current_scale
-	current_scale = scale
+    local s = scale / current_scale
+    current_scale = scale
 
-	if config.scale_mode == "ui" then
-		SCALE = current_scale -- luacheck: ignore 111
+    if config.scale_mode == "ui" then
+        SCALE = current_scale -- luacheck: ignore 111
 
-		style.padding.x = style.padding.x * s
-		style.padding.y = style.padding.y * s
-		style.divider_size = style.divider_size * s
-		style.scrollbar_size = style.scrollbar_size * s
-		style.caret_width = style.caret_width * s
-		style.tab_width = style.tab_width * s
+        style.padding.x = style.padding.x * s
+        style.padding.y = style.padding.y * s
+        style.divider_size = style.divider_size * s
+        style.scrollbar_size = style.scrollbar_size * s
+        style.caret_width = style.caret_width * s
+        style.tab_width = style.tab_width * s
 
-		style.big_font = scale_font(style.big_font, s)
-		style.icon_font = scale_font(style.icon_font, s)
-		style.font = scale_font(style.font, s)
-	end
+        style.big_font = scale_font(style.big_font, s)
+        style.icon_font = scale_font(style.icon_font, s)
+        style.font = scale_font(style.font, s)
+    end
 
-	style.code_font = scale_font(style.code_font, s)
+    style.code_font = scale_font(style.code_font, s)
 
-	-- restore scroll positions
-	for view, n in pairs(scrolls) do
-		view.scroll.y = n * (view:get_scrollable_size() - view.size.y)
-		view.scroll.to.y = view.scroll.y
-	end
+    -- restore scroll positions
+    for view, n in pairs(scrolls) do
+        view.scroll.y = n * (view:get_scrollable_size() - view.size.y)
+        view.scroll.to.y = view.scroll.y
+    end
 
-	core.redraw = true
+    core.redraw = true
 end
 
 local on_mouse_wheel = RootView.on_mouse_wheel
 
 function RootView:on_mouse_wheel(d, ...)
-	if keymap.modkeys["ctrl"] and config.scale_use_mousewheel then
-		if d < 0 then
-			command.perform("scale:decrease")
-		end
-		if d > 0 then
-			command.perform("scale:increase")
-		end
-	else
-		return on_mouse_wheel(self, d, ...)
-	end
+    if keymap.modkeys["ctrl"] and config.scale_use_mousewheel then
+        if d < 0 then
+            command.perform("scale:decrease")
+        end
+        if d > 0 then
+            command.perform("scale:increase")
+        end
+    else
+        return on_mouse_wheel(self, d, ...)
+    end
 end
 
 command.add(nil, {
-	["scale:reset"] = function()
-		set_scale(default)
-	end,
-	["scale:decrease"] = function()
-		set_scale(current_scale * 0.9)
-	end,
-	["scale:increase"] = function()
-		set_scale(current_scale * 1.1)
-	end,
+    ["scale:reset"] = function()
+        set_scale(default)
+    end,
+    ["scale:decrease"] = function()
+        set_scale(current_scale * 0.9)
+    end,
+    ["scale:increase"] = function()
+        set_scale(current_scale * 1.1)
+    end,
 })
 
 keymap.add({
-	["ctrl+0"] = "scale:reset",
-	["ctrl+-"] = "scale:decrease",
-	["ctrl+="] = "scale:increase",
+    ["ctrl+0"] = "scale:reset",
+    ["ctrl+-"] = "scale:decrease",
+    ["ctrl+="] = "scale:increase",
 })
 
 return { get_scale = get_scale, set_scale = set_scale }

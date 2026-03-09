@@ -2,7 +2,7 @@
 
 set -e
 
-cflags="-Wall -Wextra -O3 -g -std=c11 -fno-strict-aliasing -Isrc -fno-diagnostics-show-caret"
+cflags="-Wall -Wextra -Werror -O3 -g -std=c11 -fno-strict-aliasing -Isrc -fno-diagnostics-show-caret"
 
 if echo "$*" | grep -q "windows"; then
   compiler="${CC:-winlib/tcc/tcc.exe}"

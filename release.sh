@@ -2,8 +2,8 @@
 
 set -e
 
-CC="x86_64-w64-mingw32-gcc -Werror" ./build.sh windows
-CC="gcc -Werror" ./build.sh
+CC="x86_64-w64-mingw32-gcc -flto=auto -Wno-stringop-overflow" ./build.sh windows
+CC="gcc -flto=auto -Wno-stringop-overflow" ./build.sh
 
 sh ./lint.sh
 

@@ -19,7 +19,9 @@ function TerminalView:show_prompt()
 end
 
 function TerminalView:stop()
-    if not self.running then return end
+    if not self.running then
+        return
+    end
     self.running = false
     os.remove(self.output_file or "")
     os.remove(self.marker or "")

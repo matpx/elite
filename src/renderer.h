@@ -8,10 +8,10 @@ typedef struct RenImage RenImage;
 typedef struct RenFont RenFont;
 
 typedef struct {
-  uint8_t b, g, r, a;
+    uint8_t b, g, r, a;
 } RenColor;
 typedef struct {
-  int x, y, width, height;
+    int x, y, width, height;
 } RenRect;
 
 void ren_init(SDL_Window *win);

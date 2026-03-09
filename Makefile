@@ -55,6 +55,10 @@ build/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+format:
+	clang-format -i src/*.c src/*.h src/api/*.c src/api/*.h
+	stylua .
+
 lint:
 	luacheck .
 	clang-format --dry-run --Werror src/*.c src/*.h src/api/*.c src/api/*.h
@@ -71,4 +75,4 @@ release: clean
 clean:
 	rm -rf build lite lite.exe res.res lite.zip
 
-.PHONY: all clean lint release
+.PHONY: all clean format lint release

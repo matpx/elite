@@ -25,7 +25,6 @@ global { runner = {
 
 -- formatter
 
-local window_stylua = EXEDIR .. "/winlib/stylua/stylua.exe - <"
-local linux_stylua = EXEDIR .. "/winlib/stylua/stylua.exe - <"
-
-config.formatter_commands[".lua"] = windows and window_stylua or linux_stylua
+if windows then
+  config.formatter_commands[".lua"] = EXEDIR .. "/winlib/stylua/stylua.exe - <"
+end

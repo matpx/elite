@@ -10,6 +10,16 @@ local function eval(str)
     return tostring(fn())
 end
 
+command.add(nil, {
+    ["eval:run"] = function()
+        core.command_view:enter("Evaluate", function(cmd)
+            local fn, err = load(cmd)
+            assert(fn, err)
+            fn()
+        end)
+    end,
+})
+
 command.add("core.docview", {
     ["eval:insert"] = function()
         core.command_view:enter("Evaluate And Insert Result", function(cmd)

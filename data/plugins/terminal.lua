@@ -11,12 +11,22 @@ function TerminalView:new()
     self.scrollable = true
     self.lines = {}
     self.running = false
+    self:show_prompt()
 end
 
-function TerminalView:try_close(do_close)
+function TerminalView:show_prompt()
+    table.insert(self.lines, { text = "$ ", color = style.accent, is_prompt = true })
+end
+
+function TerminalView:stop()
+    if not self.running then return end
     self.running = false
     os.remove(self.output_file or "")
     os.remove(self.marker or "")
+end
+
+function TerminalView:try_close(do_close)
+    self:stop()
     do_close()
 end
 
@@ -37,7 +47,12 @@ function TerminalView:run_command(cmd)
         core.error("terminal: command already running")
         return
     end
-    table.insert(self.lines, { text = "$ " .. cmd, color = style.accent })
+    -- replace prompt line with the command
+    if self.lines[#self.lines] and self.lines[#self.lines].is_prompt then
+        self.lines[#self.lines] = { text = "$ " .. cmd, color = style.accent }
+    else
+        table.insert(self.lines, { text = "$ " .. cmd, color = style.accent })
+    end
     local output_start = #self.lines + 1
     self.running = true
     self.output_file = core.temp_filename(".term")
@@ -81,7 +96,7 @@ function TerminalView:run_command(cmd)
                 os.remove(marker)
                 os.remove(output_file)
                 self.running = false
-                table.insert(self.lines, { text = "", color = style.text })
+                self:show_prompt()
                 self.scroll.to.y = self:get_scrollable_size()
                 core.redraw = true
             end
@@ -124,20 +139,15 @@ command.add(TerminalView, {
     ["terminal:stop"] = function()
         local view = core.active_view
         if view.running then
-            view.running = false
-            os.remove(view.output_file)
-            os.remove(view.marker)
+            view:stop()
             table.insert(view.lines, { text = "^C (stopped)", color = style.accent })
+            view:show_prompt()
             core.redraw = true
         end
     end,
     ["terminal:clear"] = function()
         local view = core.active_view
-        if view.running then
-            view.running = false
-            os.remove(view.output_file)
-            os.remove(view.marker)
-        end
+        view:stop()
         view.lines = {}
         core.redraw = true
     end,

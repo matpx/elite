@@ -39,7 +39,9 @@ local function run_task(name)
     end
     if name == "build" then
         local dr = rawget(_G, "diagnostics_reload")
-        if dr then dr() end
+        if dr then
+            dr()
+        end
     end
     if success then
         core.log("runner %s succeeded", name)

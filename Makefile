@@ -51,6 +51,9 @@ ifeq ($(OS),windows)
 	x86_64-w64-mingw32-windres res.rc -O coff -o res.res
 endif
 	$(CC) $(OBJS) $(LDFLAGS) -o $@
+ifeq ($(OS),windows)
+	cp $(WIN_SDL)/bin/SDL3.dll .
+endif
 
 $(BUILDDIR)/%.o: %.c
 	@mkdir -p $(dir $@)

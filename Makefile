@@ -8,7 +8,7 @@ ifneq ($(NO_AVX),1)
 endif
 
 SRCS    = $(shell find src -name '*.c')
-BUILDDIR = build/$(or $(OS),linux)
+BUILDDIR = .build/$(or $(OS),linux)
 OBJS    = $(SRCS:%.c=$(BUILDDIR)/%.o)
 
 # --- Linux (default) ---
@@ -77,6 +77,6 @@ release: clean
 	zip -qrT lite.zip lite lite.exe SDL3.dll data
 
 clean:
-	rm -rf build lite lite.exe res.res lite.zip
+	rm -rf .build lite lite.exe res.res lite.zip SDL3.dll
 
 .PHONY: all clean format lint release

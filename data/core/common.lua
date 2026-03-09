@@ -6,7 +6,7 @@ function common.is_utf8_cont(char)
 end
 
 function common.utf8_chars(text)
-    return text:gmatch("[\0-\x7f\xc2-\xf4][\x80-\xbf]*")
+    return text:gmatch(utf8.charpattern)
 end
 
 function common.clamp(n, lo, hi)

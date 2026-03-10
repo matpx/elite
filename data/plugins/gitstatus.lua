@@ -83,7 +83,7 @@ function StatusView:get_items()
 
     if git.ahead > 0 or git.behind > 0 then
         table.insert(t, style.dim)
-        table.insert(t, "  ")
+        table.insert(t, " | ")
         local parts = {}
         if git.ahead > 0 then
             table.insert(parts, git.ahead .. " ahead")

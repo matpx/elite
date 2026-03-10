@@ -6,6 +6,7 @@
 
     Depends on plugin scale.lua version >= 20200628_154010
 --]]
+local style = require("core.style")
 local scale = require("plugins.scale")
 -- make sure plugin is installed and has get_scale field
 if not scale.get_scale then
@@ -24,6 +25,7 @@ function StatusView:get_items()
     local left, right = get_items(self)
 
     local t = {
+        style.text,
         self.separator,
         string.format(config.scalestatus_format, scale.get_scale() * 100),
     }

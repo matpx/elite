@@ -19,8 +19,9 @@ be found in the `data/plugins` directory and color themes in the
 [user module](data/user/init.lua).
 
 ## Building
-You can build the project yourself on Linux using the `build.sh` script
-or on Windows using the `build.bat` script.
+You can build the project yourself using `make`. Cross-compilation for Windows
+is supported with `make OS=windows`. Use `make release` to build both platforms,
+run linting, and package a zip.
 Note that the project does not need to be rebuilt if you are only making changes
 to the Lua portion of the code.
 

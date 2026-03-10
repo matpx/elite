@@ -1,4 +1,4 @@
--- Markers plugin for lite text editor
+-- Markers plugin for elite text editor
 -- original implementation by Petri Häkkinen
 
 local core = require "core"

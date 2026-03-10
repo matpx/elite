@@ -1,4 +1,4 @@
--- CloseConfirmX plugin for lite text editor
+-- CloseConfirmX plugin for elite text editor
 -- implementation by chekoopa
 
 local core = require "core"

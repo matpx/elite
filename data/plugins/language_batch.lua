@@ -1,6 +1,6 @@
 local syntax = require("core.syntax")
 
--- batch syntax for lite <liqube>
+-- batch syntax for elite <liqube>
 
 -- windows batch files use caseless matching for symbols
 local symtable = {

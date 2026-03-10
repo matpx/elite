@@ -1,14 +1,14 @@
-# lite-xs
+# elite (extended lite)
 ![screenshot](doc/screenshot.png)
 
 A lightweight text editor written in Lua — fork of [lite](https://github.com/rxi/lite)
 
-* **[Get lite-xs](https://github.com/matpx/lite-xs/releases/latest)** — Download
+* **[Get elite](https://github.com/matpx/elite/releases/latest)** — Download
   for Windows and Linux
 * **[Get started](doc/usage.md)** — A quick overview on how to get started
 
 ## Overview
-lite-xs is a lightweight text editor written mostly in Lua — it aims to provide
+elite is a lightweight text editor written mostly in Lua — it aims to provide
 something practical, pretty, *small* and fast, implemented as simply as
 possible; easy to modify and extend, or to use without doing either.
 
@@ -27,7 +27,7 @@ to the Lua portion of the code.
 ## Contributing
 Any additional functionality that can be added through a plugin should be done
 so as a plugin, after which a pull request can be made to the
-[lite-xs repository](https://github.com/matpx/lite-xs). In hopes
+[elite repository](https://github.com/matpx/elite). In hopes
 of remaining lightweight, pull requests adding additional functionality to the
 core will likely not be merged. Bug reports and bug fixes are welcome.
 

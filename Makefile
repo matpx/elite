@@ -15,7 +15,7 @@ OBJS    = $(SRCS:%.c=$(BUILDDIR)/%.o)
 
 CFLAGS  += -DLUA_USE_POSIX -D_XOPEN_SOURCE=500
 LDFLAGS  = -lSDL3 -lm
-TARGET   = lite
+TARGET   = elite
 
 # --- Windows (cross-compile) ---
 
@@ -25,7 +25,7 @@ ifeq ($(OS),windows)
   CFLAGS  := $(filter-out -DLUA_USE_POSIX -D_XOPEN_SOURCE=500,$(CFLAGS))
   CFLAGS  += -I$(WIN_SDL)/include
   LDFLAGS  = -Wl,-subsystem=windows -luser32 $(WIN_SDL)/bin/SDL3.dll res.res
-  TARGET   = lite.exe
+  TARGET   = elite.exe
 endif
 
 # --- Sanitizers ---
@@ -72,11 +72,11 @@ release: clean
 	$(MAKE) OS=windows
 	$(MAKE)
 	$(MAKE) lint
-	strip SDL3.dll lite.exe lite
-	rm -f lite.zip
-	zip -qrT lite.zip lite lite.exe SDL3.dll data
+	strip SDL3.dll elite.exe elite
+	rm -f elite.zip
+	zip -qrT elite.zip elite elite.exe SDL3.dll data
 
 clean:
-	rm -rf .build lite lite.exe res.res lite.zip SDL3.dll
+	rm -rf .build elite elite.exe res.res elite.zip SDL3.dll
 
 .PHONY: all clean format lint release

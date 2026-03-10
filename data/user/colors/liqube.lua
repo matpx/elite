@@ -1,4 +1,4 @@
--- Liqube Dark Code for Lite <liqube.com>
+-- Liqube Dark Code for elite <liqube.com>
 
 local style = require("core.style")
 local common = require("core.common")

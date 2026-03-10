@@ -1,25 +1,25 @@
-# lite
+# elite
 
 ![screenshot](https://user-images.githubusercontent.com/3920290/81471642-6c165880-91ea-11ea-8cd1-fae7ae8f0bc4.png)
 
 ## Overview
-lite is a lightweight text editor written mostly in Lua — it aims to provide
+elite is a lightweight text editor written mostly in Lua — it aims to provide
 something practical, pretty, *small* and fast, implemented as simply as
 possible; easy to modify and extend, or to use without doing either.
 
 
 ## Getting Started
-When lite is started it's typically opened with a *project directory* — this
+When elite is started it's typically opened with a *project directory* — this
 is the directory where your project's code and other data resides. The project
-directory is set once when lite is started and, for the duration of the
+directory is set once when elite is started and, for the duration of the
 session, cannot be changed.
 
-To open lite with a specific project directory the directory name can be passed
+To open elite with a specific project directory the directory name can be passed
 as a command-line argument *(`.` can be passed to use the current directory)* or
-the directory can be dragged onto either the lite executable or a running
-instance of lite.
+the directory can be dragged onto either the elite executable or a running
+instance of elite.
 
-The main way of opening files in lite is through the `core:find-file` command
+The main way of opening files in elite is through the `core:find-file` command
 — this provides a fuzzy finder over all of the project's files and can be
 opened using the **`ctrl+p`** shortcut by default.
 
@@ -32,12 +32,12 @@ of the command name on the command finder, thus to find the shortcut for a comma
 
 
 ## User Module
-lite can be configured through use of the user module. The user module can be
+elite can be configured through use of the user module. The user module can be
 used for changing options in the config module, adding additional key bindings,
 loading custom color themes, modifying the style or changing any other part of
-lite to your personal preference.
+elite to your personal preference.
 
-The user module is loaded by lite when the application starts, after the plugins
+The user module is loaded by elite when the application starts, after the plugins
 have been loaded.
 
 The user module can be modified by running the `core:open-user-module` command
@@ -50,14 +50,14 @@ directory. Project modules can be useful for things like adding custom commands
 for project-specific build systems, or loading project-specific plugins.
 
 By default, the project module is not automatically loaded. If an untrusted
-project module is found, lite will log a notice. To load it, either run the
+project module is found, elite will log a notice. To load it, either run the
 `core:load-project-module` command or enable `config.auto_load_project_module`
 in your user module.
 
 
 ## Commands
-Commands in lite are used both through the command finder (`ctrl+shift+p`) and
-by lite's keyboard shortcut system. Commands consist of 3 components:
+Commands in elite are used both through the command finder (`ctrl+shift+p`) and
+by elite's keyboard shortcut system. Commands consist of 3 components:
 * **Name** — The command name in the form of `namespace:action-name`, for
   example: `doc:select-all`
 * **Predicate** — A function that returns true if the command can be ran, for
@@ -89,9 +89,9 @@ command.perform "core:quit"
 
 
 ## Keymap
-All keyboard shortcuts in lite are handled by the `core.keymap` module. A key
-binding in lite maps a "stroke" (eg. `ctrl+q`) to one or more commands (eg.
-`core:quit`). When the shortcut is pressed lite will iterate each command
+All keyboard shortcuts in elite are handled by the `core.keymap` module. A key
+binding in elite maps a "stroke" (eg. `ctrl+q`) to one or more commands (eg.
+`core:quit`). When the shortcut is pressed elite will iterate each command
 assigned to that key and run the *predicate function* for that command — if the
 predicate passes it stops iterating and runs the command.
 
@@ -112,13 +112,13 @@ keymap.add { ["ctrl+q"] = "core:quit" }
 
 
 ## Plugins
-Plugins in lite are normal lua modules and are treated as such — no
+Plugins in elite are normal lua modules and are treated as such — no
 complicated plugin manager is provided, and, once a plugin is loaded, it is never
 expected be to have to unload itself.
 
 To install a plugin simply drop it in the `data/plugins` directory — installed
-plugins will be automatically loaded when lite starts. To uninstall a plugin the
-plugin file can be deleted — any plugin (including those included with lite's
+plugins will be automatically loaded when elite starts. To uninstall a plugin the
+plugin file can be deleted — any plugin (including those included with elite's
 default installation) can be deleted to remove its functionality.
 
 To disable a plugin without deleting it, rename the file to end with
@@ -131,11 +131,11 @@ only on a given project) the plugin can be placed somewhere other than the
 `data/plugins` directory so that it is not automatically loaded. The plugin can
 then be loaded manually as needed by using the `require` function.
 
-Plugins can be downloaded from the [plugins repository](https://github.com/rxi/lite-plugins).
+Plugins can be downloaded from the [plugins repository](https://github.com/rxi/elite-plugins).
 
 
 ## Color Themes
-Colors themes in lite are lua modules which overwrite the color fields of lite's
+Colors themes in elite are lua modules which overwrite the color fields of elite's
 `core.style` module. Color themes should be placed in the `data/user/colors`
 directory.
 
@@ -144,5 +144,5 @@ A color theme can be set by requiring it in your user module:
 require "user.colors.winter"
 ```
 
-Color themes can be downloaded from the [color themes repository](https://github.com/rxi/lite-colors).
+Color themes can be downloaded from the [color themes repository](https://github.com/rxi/elite-colors).
 

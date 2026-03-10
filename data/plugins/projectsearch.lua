@@ -204,29 +204,33 @@ local function begin_search(text, fn)
     core.root_view:get_active_node():add_view(rv)
 end
 
+local function project_search(label, fn)
+    local dv = core.active_view
+    if dv and dv.doc and dv.doc:has_selection() then
+        core.command_view:set_text(dv.doc:get_text(dv.doc:get_selection()), true)
+    end
+    core.command_view:enter(label, function(text)
+        begin_search(text, fn(text))
+    end)
+end
+
 command.add(nil, {
     ["project-search:find"] = function()
-        core.command_view:enter("Find Text In Project", function(text)
+        project_search("Find Text In Project", function(text)
             text = text:lower()
-            begin_search(text, function(line_text)
-                return line_text:lower():find(text, nil, true)
-            end)
+            return function(line) return line:lower():find(text, nil, true) end
         end)
     end,
 
     ["project-search:find-pattern"] = function()
-        core.command_view:enter("Find Pattern In Project", function(text)
-            begin_search(text, function(line_text)
-                return line_text:find(text)
-            end)
+        project_search("Find Pattern In Project", function(text)
+            return function(line) return line:find(text) end
         end)
     end,
 
     ["project-search:fuzzy-find"] = function()
-        core.command_view:enter("Fuzzy Find Text In Project", function(text)
-            begin_search(text, function(line_text)
-                return common.fuzzy_match(line_text, text) and 1
-            end)
+        project_search("Fuzzy Find Text In Project", function(text)
+            return function(line) return common.fuzzy_match(line, text) and 1 end
         end)
     end,
 })

@@ -6,7 +6,7 @@ local config = require("core.config")
 local View = require("core.view")
 
 config.matrix_speed = 0.4 -- multiplier for fall speed
-config.matrix_density = 0.02 -- 0..1, column spawn probability
+config.matrix_density = 0.05 -- 0..1, column spawn probability
 config.matrix_fade_steps = 16 -- number of brightness levels in a trail
 
 local chars = "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(){}[]<>~"

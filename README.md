@@ -1,4 +1,4 @@
-# elite (extended lite)
+# elite — extended lite
 ![screenshot](doc/screenshot.png)
 
 A lightweight text editor written in Lua — fork of [lite](https://github.com/rxi/lite)

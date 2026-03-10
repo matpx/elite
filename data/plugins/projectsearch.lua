@@ -218,19 +218,25 @@ command.add(nil, {
     ["project-search:find"] = function()
         project_search("Find Text In Project", function(text)
             text = text:lower()
-            return function(line) return line:lower():find(text, nil, true) end
+            return function(line)
+                return line:lower():find(text, nil, true)
+            end
         end)
     end,
 
     ["project-search:find-pattern"] = function()
         project_search("Find Pattern In Project", function(text)
-            return function(line) return line:find(text) end
+            return function(line)
+                return line:find(text)
+            end
         end)
     end,
 
     ["project-search:fuzzy-find"] = function()
         project_search("Fuzzy Find Text In Project", function(text)
-            return function(line) return common.fuzzy_match(line, text) and 1 end
+            return function(line)
+                return common.fuzzy_match(line, text) and 1
+            end
         end)
     end,
 })

@@ -83,17 +83,19 @@ local function reload()
         local file, ln, kind, msg = parse_line(line)
         if file then
             local abs = system.absolute_path(file)
-            if not diagnostics[abs] then
-                diagnostics[abs] = {}
-            end
-            if not diagnostics[abs][ln] then
-                diagnostics[abs][ln] = {}
-            end
-            table.insert(diagnostics[abs][ln], { kind = kind, message = msg })
-            if kind == "error" then
-                error_count = error_count + 1
-            elseif kind == "warning" then
-                warning_count = warning_count + 1
+            if abs then
+                if not diagnostics[abs] then
+                    diagnostics[abs] = {}
+                end
+                if not diagnostics[abs][ln] then
+                    diagnostics[abs][ln] = {}
+                end
+                table.insert(diagnostics[abs][ln], { kind = kind, message = msg })
+                if kind == "error" then
+                    error_count = error_count + 1
+                elseif kind == "warning" then
+                    warning_count = warning_count + 1
+                end
             end
         end
     end

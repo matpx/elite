@@ -46,10 +46,10 @@ local function parse_line(line)
         return file, tonumber(ln), kind, msg
     end
 
-    -- file:line:col: syntax error: message (go)
-    file, ln, msg = line:match("^(.+):(%d+):%d+: syntax error: (.+)$")
+    -- file:line:col: message (go — no kind prefix)
+    file, ln, msg = line:match("^(.+):(%d+):%d+: (.+)$")
     if file then
-        return file, tonumber(ln), "error", "syntax error: " .. msg
+        return file, tonumber(ln), "error", msg
     end
 
     -- file:line: kind: message (tcc)

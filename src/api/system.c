@@ -1,4 +1,5 @@
 #include "api.h"
+#include "lib/rpmalloc/rpmalloc.h"
 #include "rencache.h"
 #include <SDL3/SDL.h>
 #include <ctype.h>
@@ -327,7 +328,7 @@ static int f_sleep(lua_State *L) {
 static int f_exec(lua_State *L) {
     size_t len;
     const char *cmd = luaL_checklstring(L, 1, &len);
-    char *buf = malloc(len + 32);
+    char *buf = rpmalloc(len + 32);
     if (!buf) {
         luaL_error(L, "buffer allocation failed");
     }
@@ -338,7 +339,7 @@ static int f_exec(lua_State *L) {
     sprintf(buf, "%s &", cmd);
     int ok = system(buf) == 0;
 #endif
-    free(buf);
+    rpfree(buf);
     lua_pushboolean(L, ok);
     return 1;
 }

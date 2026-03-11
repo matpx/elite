@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #define SDL_MAIN_HANDLED
 #include "api/api.h"
+#include "lib/rpmalloc/rpmalloc.h"
 #include "rencache.h"
 #include "renderer.h"
 #include <SDL3/SDL.h>
@@ -15,6 +16,42 @@
 #endif
 
 SDL_Window *window;
+static lua_State *L;
+
+static void shutdown_rpmalloc(void) {
+    rpmalloc_global_statistics_t stats = {0};
+    rpmalloc_global_statistics(&stats);
+    fprintf(stderr,
+            "[rpmalloc] mapped: %zu KB (peak %zu KB), active: %zu KB (peak "
+            "%zu KB), heaps: %zu\n",
+            stats.mapped / 1024, stats.mapped_peak / 1024,
+            stats.active / 1024, stats.active_peak / 1024,
+            stats.heap_count);
+    rpmalloc_finalize();
+}
+
+static void shutdown_sdl(void) {
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
+static void shutdown_lua(void) {
+    if (!L)
+        return;
+    rencache_end_frame();
+    lua_close(L);
+    L = NULL;
+}
+
+static void *rp_lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
+    (void)ud;
+    (void)osize;
+    if (nsize == 0) {
+        rpfree(ptr);
+        return NULL;
+    }
+    return rprealloc(ptr, nsize);
+}
 
 static double get_scale(void) { return SDL_GetWindowDisplayScale(window); }
 
@@ -47,7 +84,11 @@ static void init_window_icon(void) {
 }
 
 int main(int argc, char **argv) {
+    rpmalloc_initialize(NULL);
+    atexit(shutdown_rpmalloc);
+    SDL_SetMemoryFunctions(rpmalloc, rpcalloc, rprealloc, rpfree);
     SDL_Init(SDL_INIT_VIDEO);
+    atexit(shutdown_sdl);
     SDL_EnableScreenSaver();
     SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
 
@@ -65,7 +106,8 @@ int main(int argc, char **argv) {
 
     SDL_StartTextInput(window);
 
-    lua_State *L = luaL_newstate();
+    L = lua_newstate(rp_lua_alloc, NULL, luaL_makeseed(NULL));
+    atexit(shutdown_lua);
     luaL_openlibs(L);
     api_load_libs(L);
 
@@ -109,13 +151,6 @@ int main(int argc, char **argv) {
            "  end\n"
            "  os.exit(1)\n"
            "end)");
-
-    /* reset the command buffer so font GC finalizers' deferred frees
-    ** don't reference stale rendering state */
-    rencache_end_frame();
-    lua_close(L);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
 
     return EXIT_SUCCESS;
 }

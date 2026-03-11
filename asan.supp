@@ -1,0 +1,9 @@
+leak:libSDL3
+leak:libxkbcommon
+leak:libffi
+leak:libwayland
+leak:libX11
+leak:libGLX
+leak:libEGL
+leak:libglib
+leak:libgobject

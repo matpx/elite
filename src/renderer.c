@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "lib/qoi/qoi.h"
+#include "lib/rpmalloc/rpmalloc.h"
 #include "lib/stb/stb_image.h"
 #include "lib/stb/stb_image_resize2.h"
 #include "lib/stb/stb_truetype.h"
@@ -108,7 +109,7 @@ void ren_get_size(int *x, int *y) {
 RenImage *ren_new_image(int width, int height) {
     assert(width > 0 && height > 0);
     RenImage *image =
-        malloc(sizeof(RenImage) + (size_t)width * height * sizeof(RenColor));
+        rpmalloc(sizeof(RenImage) + (size_t)width * height * sizeof(RenColor));
     check_alloc(image);
     image->pixels = (void *)(image + 1);
     image->width = width;
@@ -144,7 +145,7 @@ RenImage *ren_load_image(const char *filename) {
 
     RenImage *image = ren_new_image(w, h);
     if (!image) {
-        free(data);
+        rpfree(data);
         return NULL;
     }
 
@@ -158,7 +159,7 @@ RenImage *ren_load_image(const char *filename) {
     }
 
     if (is_qoi) {
-        free(data);
+        rpfree(data);
     } else {
         stbi_image_free(data);
     }
@@ -182,14 +183,14 @@ RenImage *ren_resize_image(RenImage *image, int new_w, int new_h) {
     return resized;
 }
 
-void ren_free_image(RenImage *image) { free(image); }
+void ren_free_image(RenImage *image) { rpfree(image); }
 
 int ren_get_image_width(RenImage *image) { return image->width; }
 
 int ren_get_image_height(RenImage *image) { return image->height; }
 
 static GlyphSet *load_glyphset(RenFont *font, int idx) {
-    GlyphSet *set = check_alloc(calloc(1, sizeof(GlyphSet)));
+    GlyphSet *set = check_alloc(rpcalloc(1, sizeof(GlyphSet)));
 
     /* init image */
     int width = 128;
@@ -245,7 +246,7 @@ RenFont *ren_load_font(const char *filename, float size) {
     FILE *fp = NULL;
 
     /* init font */
-    font = check_alloc(calloc(1, sizeof(RenFont)));
+    font = check_alloc(rpcalloc(1, sizeof(RenFont)));
     font->size = size;
 
     /* load font into buffer */
@@ -258,7 +259,7 @@ RenFont *ren_load_font(const char *filename, float size) {
     int buf_size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
     /* load */
-    font->data = check_alloc(malloc(buf_size));
+    font->data = check_alloc(rpmalloc(buf_size));
     int _ = fread(font->data, 1, buf_size, fp);
     (void)_;
     fclose(fp);
@@ -288,9 +289,9 @@ fail:
         fclose(fp);
     }
     if (font) {
-        free(font->data);
+        rpfree(font->data);
     }
-    free(font);
+    rpfree(font);
     return NULL;
 }
 
@@ -299,11 +300,11 @@ void ren_free_font(RenFont *font) {
         GlyphSet *set = font->sets[i];
         if (set) {
             ren_free_image(set->image);
-            free(set);
+            rpfree(set);
         }
     }
-    free(font->data);
-    free(font);
+    rpfree(font->data);
+    rpfree(font);
 }
 
 void ren_set_font_tab_width(RenFont *font, int n) {

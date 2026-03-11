@@ -3,7 +3,8 @@
 -- Config:
 --   config.diagnostics_file = "diagnostics.txt"  -- path to log file (relative to project)
 --
--- Supports gcc/clang/tcc output formats:
+-- Supports gcc/clang/tcc/tsc output formats:
+--   file(line,col): kind TSnnnn: message
 --   file:line:col: kind: message
 --   file:line: kind: message
 
@@ -29,6 +30,12 @@ local kind_colors = {
 
 local function parse_line(line)
     local file, ln, kind, msg
+
+    -- file(line,col): kind TSnnnn: message (tsc)
+    file, ln, kind, msg = line:match("^%s*(.+)%((%d+),%d+%): (%w+) TS%d+: (.+)$")
+    if file and kind_colors[kind] then
+        return file, tonumber(ln), kind, msg
+    end
 
     -- file:line:col: (Ennn) message  /  (Wnnn) message (luacheck)
     file, ln, msg = line:match("^%s*(.+):(%d+):%d+: %(E%d+%) (.+)$")

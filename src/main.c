@@ -14,7 +14,23 @@
 #include <mach-o/dyld.h>
 #endif
 
-SDL_Window *window;
+SDL_Window *window = NULL;
+lua_State *L = NULL;
+
+static void shutdown_lua(void) {
+    if (!L) {
+        return;
+    }
+    rencache_end_frame();
+    lua_close(L);
+}
+
+static void shutdown_sdl(void) {
+    if (window) {
+        SDL_DestroyWindow(window);
+    }
+    SDL_Quit();
+}
 
 static double get_scale(void) { return SDL_GetWindowDisplayScale(window); }
 
@@ -48,6 +64,8 @@ static void init_window_icon(void) {
 
 int main(int argc, char **argv) {
     SDL_Init(SDL_INIT_VIDEO);
+    atexit(shutdown_sdl);
+
     SDL_EnableScreenSaver();
     SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
 
@@ -65,7 +83,9 @@ int main(int argc, char **argv) {
 
     SDL_StartTextInput(window);
 
-    lua_State *L = luaL_newstate();
+    L = luaL_newstate();
+    atexit(shutdown_lua);
+
     luaL_openlibs(L);
     api_load_libs(L);
 
@@ -110,12 +130,7 @@ int main(int argc, char **argv) {
            "  os.exit(1)\n"
            "end)");
 
-    /* reset the command buffer so font GC finalizers' deferred frees
-    ** don't reference stale rendering state */
-    rencache_end_frame();
-    lua_close(L);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    // atexit() shutdown functions called
 
     return EXIT_SUCCESS;
 }

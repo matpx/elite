@@ -20,19 +20,19 @@ APP_OBJS = $(APP_SRCS:%.c=$(BUILDDIR)/%.o)
 LUA_SRCS      = src/lib/lua55/onelua.c
 STB_SRCS      = $(wildcard src/lib/stb/*.c)
 QOI_SRCS      = $(wildcard src/lib/qoi/*.c)
-# RPMALLOC_SRCS = src/lib/rpmalloc/rpmalloc.c
+RPMALLOC_SRCS = src/lib/rpmalloc/rpmalloc.c
 
 LUA_OBJS      = $(LUA_SRCS:%.c=$(BUILDDIR)/%.o)
 STB_OBJS      = $(STB_SRCS:%.c=$(BUILDDIR)/%.o)
 QOI_OBJS      = $(QOI_SRCS:%.c=$(BUILDDIR)/%.o)
-# RPMALLOC_OBJS = $(RPMALLOC_SRCS:%.c=$(BUILDDIR)/%.o)
+RPMALLOC_OBJS = $(RPMALLOC_SRCS:%.c=$(BUILDDIR)/%.o)
 
 LIB_LUA      = $(BUILDDIR)/liblua.a
 LIB_STB      = $(BUILDDIR)/libstb.a
 LIB_QOI      = $(BUILDDIR)/libqoi.a
-# LIB_RPMALLOC = $(BUILDDIR)/librpmalloc.a
+LIB_RPMALLOC = $(BUILDDIR)/librpmalloc.a
 
-LIBS = $(LIB_LUA) $(LIB_STB) $(LIB_QOI) # $(LIB_RPMALLOC)
+LIBS = $(LIB_LUA) $(LIB_STB) $(LIB_QOI) $(LIB_RPMALLOC)
 
 # --- Linux (default) ---
 
@@ -87,8 +87,8 @@ $(LIB_STB): $(STB_OBJS)
 $(LIB_QOI): $(QOI_OBJS)
 	$(AR) rcs $@ $^
 
-# $(LIB_RPMALLOC): $(RPMALLOC_OBJS)
-# 	$(AR) rcs $@ $^
+$(LIB_RPMALLOC): $(RPMALLOC_OBJS)
+	$(AR) rcs $@ $^
 
 $(BUILDDIR)/%.o: %.c
 	@mkdir -p $(dir $@)

@@ -32,7 +32,11 @@ LIB_STB      = $(BUILDDIR)/libstb.a
 LIB_QOI      = $(BUILDDIR)/libqoi.a
 LIB_RPMALLOC = $(BUILDDIR)/librpmalloc.a
 
-LIBS = $(LIB_LUA) $(LIB_STB) $(LIB_QOI) $(LIB_RPMALLOC)
+LIBS = $(LIB_LUA) $(LIB_STB) $(LIB_QOI)
+
+ifneq ($(NO_RPMALLOC),1)
+  LIBS += $(LIB_RPMALLOC)
+endif
 
 # --- Linux (default) ---
 

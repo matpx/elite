@@ -1,13 +1,13 @@
 CC ?= gcc
 
 CFLAGS = -Wall -Wextra -Werror -O3 -g -std=c11 -fno-strict-aliasing -Isrc \
-         -fno-diagnostics-show-caret
+         -fno-diagnostics-show-caret -DMAKE_LIB
 
 ifneq ($(NO_AVX),1)
   CFLAGS += -march=x86-64-v3
 endif
 
-SRCS    = $(shell find src -name '*.c')
+SRCS = $(shell find src -name '*.c' -not -path 'src/lib/lua55/*') src/lib/lua55/onelua.c
 BUILDDIR = .build/$(or $(OS),linux)
 OBJS    = $(SRCS:%.c=$(BUILDDIR)/%.o)
 

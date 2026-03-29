@@ -2,6 +2,7 @@
 #include "rencache.h"
 #include <SDL3/SDL.h>
 #include <ctype.h>
+#include <dirent.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -10,7 +11,6 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-#include <dirent.h>
 #include <sys/inotify.h>
 #endif
 

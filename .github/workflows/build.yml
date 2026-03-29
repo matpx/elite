@@ -24,6 +24,8 @@ jobs:
           sudo cmake --install /tmp/SDL3/build
       - name: Build release
         run: make -j$(nproc) release
+        env:
+          CC: gcc
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

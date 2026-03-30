@@ -1,7 +1,7 @@
 CC ?= gcc
 
 CFLAGS = -Wall -Wextra -Werror -O3 -g -std=c11 -fno-strict-aliasing -Isrc \
-         -fno-diagnostics-show-caret -DMAKE_LIB
+         -DMAKE_LIB $(EXTRA_CFLAGS)
 
 ifneq ($(NO_AVX),1)
   CFLAGS += -march=x86-64-v3
@@ -40,7 +40,7 @@ endif
 
 # --- Linux (default) ---
 
-CFLAGS  += -DLUA_USE_POSIX -D_XOPEN_SOURCE=600
+CFLAGS  += -DLUA_USE_POSIX -D_XOPEN_SOURCE=600 -D_DEFAULT_SOURCE
 LDFLAGS  = -lSDL3 -lm
 TARGET   = elite
 

@@ -1,5 +1,4 @@
 #include "api.h"
-#include "rencache.h"
 #include "renderer.h"
 
 static int f_load(lua_State *L) {

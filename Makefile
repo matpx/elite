@@ -11,8 +11,7 @@ BUILDDIR = .build/$(or $(OS),linux)
 
 # --- App sources (everything in src/ except src/lib/) ---
 
-APP_SRCS = $(shell find src -maxdepth 1 -name '*.c') \
-           $(shell find src/api -name '*.c')
+APP_SRCS = $(wildcard src/*.c) $(wildcard src/api/*.c)
 APP_OBJS = $(APP_SRCS:%.c=$(BUILDDIR)/%.o)
 
 # --- Libraries ---

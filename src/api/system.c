@@ -417,37 +417,7 @@ static int f_watch_dir_poll(lua_State *L) {
 
 static int dm_fd = -1;
 
-static int dm_ignore_match(lua_State *L, const char *name) {
-    /* expects the patterns table (or string) at stack index 2 */
-    if (lua_isstring(L, 2)) {
-        lua_getglobal(L, "string");
-        lua_getfield(L, -1, "find");
-        lua_pushstring(L, name);
-        lua_pushvalue(L, 2);
-        lua_call(L, 2, 1);
-        int match = !lua_isnil(L, -1);
-        lua_pop(L, 2); /* result + string table */
-        return match;
-    }
-    if (lua_istable(L, 2)) {
-        int len = lua_rawlen(L, 2);
-        for (int i = 1; i <= len; i++) {
-            lua_rawgeti(L, 2, i);
-            lua_getglobal(L, "string");
-            lua_getfield(L, -1, "find");
-            lua_pushstring(L, name);
-            lua_pushvalue(L, -4); /* pattern */
-            lua_call(L, 2, 1);
-            int match = !lua_isnil(L, -1);
-            lua_pop(L, 3); /* result + string table + pattern */
-            if (match)
-                return 1;
-        }
-    }
-    return 0;
-}
-
-static void dm_watch_recursive(lua_State *L, const char *path) {
+static void dm_watch_recursive(const char *path) {
     int flags = IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO;
     inotify_add_watch(dm_fd, path, flags);
     DIR *dir = opendir(path);
@@ -460,15 +430,13 @@ static void dm_watch_recursive(lua_State *L, const char *path) {
             continue;
         if (entry->d_type != DT_DIR && entry->d_type != DT_UNKNOWN)
             continue;
-        if (dm_ignore_match(L, entry->d_name))
-            continue;
         snprintf(child, sizeof(child), "%s/%s", path, entry->d_name);
         if (entry->d_type == DT_DIR) {
-            dm_watch_recursive(L, child);
+            dm_watch_recursive(child);
         } else {
             struct stat st;
             if (stat(child, &st) == 0 && S_ISDIR(st.st_mode))
-                dm_watch_recursive(L, child);
+                dm_watch_recursive(child);
         }
     }
     closedir(dir);
@@ -482,7 +450,7 @@ static int f_watch_dir(lua_State *L) {
     dm_fd = inotify_init1(IN_NONBLOCK);
     if (dm_fd < 0)
         return 0;
-    dm_watch_recursive(L, path);
+    dm_watch_recursive(path);
     return 0;
 }
 

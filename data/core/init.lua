@@ -92,7 +92,7 @@ function core.init()
     end
 
     system.chdir(project_dir)
-    system.watch_dir(".", config.ignore_files)
+    system.watch_dir(".")
 
     core.frame_start = 0
     core.clip_rect_stack = { { 0, 0, 0, 0 } }

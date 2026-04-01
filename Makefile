@@ -65,7 +65,7 @@ endif
 
 ifneq ($(NO_LTO),1)
   CFLAGS  += -flto=auto
-  LDFLAGS += -flto=auto -Wno-stringop-overflow
+  LDFLAGS += -flto=auto
 endif
 
 # --- Targets ---

@@ -33,7 +33,7 @@ LIB_RPMALLOC = $(BUILDDIR)/librpmalloc.a
 
 LIBS = $(LIB_LUA) $(LIB_STB) $(LIB_QOI)
 
-ifneq ($(NO_RPMALLOC),1)
+ifeq ($(RPMALLOC),1)
   LIBS += $(LIB_RPMALLOC)
 endif
 
